@@ -19,7 +19,7 @@ Once brew is installed, upgrade Python.
     $ brew install python3
 
 This returned the error: 
-Error: The following directories are not writable by your user:
+> Error: The following directories are not writable by your user:
 /usr/local/bin
 /usr/local/include
 /usr/local/lib
@@ -30,27 +30,27 @@ Error: The following directories are not writable by your user:
 /usr/local/share/man/man1
 /usr/local/share/man/man7
 
-You should change the ownership of these directories to your user.
+> You should change the ownership of these directories to your user.
   sudo chown -R $(whoami) /usr/local/bin /usr/local/include /usr/local/lib /usr/local/share /usr/local/share/info /usr/local/share/locale /usr/local/share/man /usr/local/share/man/man1 /usr/local/share/man/man7
 
-And make sure that your user has write permission.
+> And make sure that your user has write permission.
   chmod u+w /usr/local/bin /usr/local/include /usr/local/lib /usr/local/share /usr/local/share/info /usr/local/share/locale /usr/local/share/man /usr/local/share/man/man1 /usr/local/share/man/man7
   
 I followed the commands as given. Then, the brew install command worked.
-==> python
+> ==> python
 Python has been installed as
   /usr/local/bin/python3
 
-Unversioned symlinks `python`, `python-config`, `pip` etc. pointing to
+> Unversioned symlinks `python`, `python-config`, `pip` etc. pointing to
 `python3`, `python3-config`, `pip3` etc., respectively, have been installed into
   /usr/local/opt/python/libexec/bin
 
-You can install Python packages with
+> You can install Python packages with
   pip3 install <package>
 They will install into the site-package directory
   /usr/local/lib/python3.7/site-packages
 
-See: https://docs.brew.sh/Homebrew-and-Python
+> See: https://docs.brew.sh/Homebrew-and-Python
 
 Check that the pip3 commands are available
 
@@ -61,7 +61,7 @@ Next, I tried
     $ pip install nhdnet
 
 This returned the following error:
-Collecting nhdnet
+> Collecting nhdnet
   Using cached nhdnet-0.2.0-py3-none-any.whl (20 kB)
 Requirement already satisfied: pandas in /Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages (from nhdnet) (0.25.3)
 Requirement already satisfied: requests in /Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages (from nhdnet) (2.22.0)
@@ -98,7 +98,7 @@ And then,
     $ pip install nhdnet
     
 Success! 
-Installing collected packages: rtree, nhdnet
+> Installing collected packages: rtree, nhdnet
     Running setup.py install for rtree ... done
 Successfully installed nhdnet-0.2.0 rtree-0.9.4
 
