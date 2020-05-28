@@ -5,7 +5,7 @@ I found it easiest to install geofeather and nhdnet in command line. I had quite
 
 ### Geofeather install
     $ pip install geofeather
-This worked just fine.     
+This worked just fine.
 
 ### NHDnet (see https://pypi.org/project/nhdnet/)
 Check that you are running python > 3.6.
@@ -18,9 +18,9 @@ Once brew is installed, upgrade Python.
 
     $ brew install python3
 
-This returned the error: 
+This returned the error:
 > Error: The following directories are not writable by your user:
-/usr/local/bin
+> /usr/local/bin
 /usr/local/include
 /usr/local/lib
 /usr/local/share
@@ -31,42 +31,42 @@ This returned the error:
 /usr/local/share/man/man7
 
 > You should change the ownership of these directories to your user.
-  sudo chown -R $(whoami) /usr/local/bin /usr/local/include /usr/local/lib /usr/local/share /usr/local/share/info /usr/local/share/locale /usr/local/share/man /usr/local/share/man/man1 /usr/local/share/man/man7
+>  sudo chown -R $(whoami) /usr/local/bin /usr/local/include /usr/local/lib /usr/local/share /usr/local/share/info /usr/local/share/locale /usr/local/share/man /usr/local/share/man/man1 /usr/local/share/man/man7
 
 > And make sure that your user has write permission.
-  chmod u+w /usr/local/bin /usr/local/include /usr/local/lib /usr/local/share /usr/local/share/info /usr/local/share/locale /usr/local/share/man /usr/local/share/man/man1 /usr/local/share/man/man7
-  
+>  chmod u+w /usr/local/bin /usr/local/include /usr/local/lib /usr/local/share /usr/local/share/info /usr/local/share/locale /usr/local/share/man /usr/local/share/man/man1 /usr/local/share/man/man7
+
 I followed the commands as given. Then, the brew install command worked.
 > ==> python
-Python has been installed as
-  /usr/local/bin/python3
+>  Python has been installed as
+>  /usr/local/bin/python3
 
 > Unversioned symlinks `python`, `python-config`, `pip` etc. pointing to
 `python3`, `python3-config`, `pip3` etc., respectively, have been installed into
-  /usr/local/opt/python/libexec/bin
+>  /usr/local/opt/python/libexec/bin
 
 > You can install Python packages with
-  pip3 install <package>
-They will install into the site-package directory
-  /usr/local/lib/python3.7/site-packages
+>  pip3 install <package>
+>They will install into the site-package directory
+>  /usr/local/lib/python3.7/site-packages
 
 > See: https://docs.brew.sh/Homebrew-and-Python
 
 Check that the pip3 commands are available
 
     $ pip3
-    
-Next, I tried 
+
+Next, I tried
 
     $ pip install nhdnet
 
 This returned the following error:
 > Collecting nhdnet
-  Using cached nhdnet-0.2.0-py3-none-any.whl (20 kB)
-Requirement already satisfied: pandas in /Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages (from nhdnet) (0.25.3)
-Requirement already satisfied: requests in /Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages (from nhdnet) (2.22.0)
-Collecting rtree
-  Using cached Rtree-0.9.4.tar.gz (62 kB)
+>  Using cached nhdnet-0.2.0-py3-none-any.whl (20 kB)
+> Requirement already satisfied: pandas in /Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages (from nhdnet) (0.25.3)
+> Requirement already satisfied: requests in /Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages (from nhdnet) (2.22.0)
+> Collecting rtree
+  > Using cached Rtree-0.9.4.tar.gz (62 kB)
     ERROR: Command errored out with exit status 1:
      command: /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -c 'import sys, setuptools, tokenize; sys.argv[0] = '"'"'/private/var/folders/zz/khmq029s47sdmy5mfd4btz880000gn/T/pip-install-8ok8aflg/rtree/setup.py'"'"'; __file__='"'"'/private/var/folders/zz/khmq029s47sdmy5mfd4btz880000gn/T/pip-install-8ok8aflg/rtree/setup.py'"'"';f=getattr(tokenize, '"'"'open'"'"', open)(__file__);code=f.read().replace('"'"'\r\n'"'"', '"'"'\n'"'"');f.close();exec(compile(code, __file__, '"'"'exec'"'"'))' egg_info --egg-base /private/var/folders/zz/khmq029s47sdmy5mfd4btz880000gn/T/pip-pip-egg-info-vieov9ui
          cwd: /private/var/folders/zz/khmq029s47sdmy5mfd4btz880000gn/T/pip-install-8ok8aflg/rtree/
@@ -92,14 +92,21 @@ ERROR: Command errored out with exit status 1: python setup.py egg_info Check th
 This error is noted by the nhdnet creators and they provide a fix here: https://pypi.org/project/nhdnet/  I followed this and typed
 
     $ brew install spatialindex
-    
+
 And then,
 
     $ pip install nhdnet
-    
-Success! 
+
+Success!
 > Installing collected packages: rtree, nhdnet
     Running setup.py install for rtree ... done
 Successfully installed nhdnet-0.2.0 rtree-0.9.4
 
-Now, the ipynb should be able to exceute the first code block.
+Now, the ipynb should be able to execute the first code block.
+
+## Notes about the ID created by Ward
+
+The lineID is created in the notebook 'extract_flowlines_waterbodies'. In the ReadME of that folder, Ward states:
+> flowlines are identified using `lineID` from this point forward; this is a unique ID assigned to this specific run of the data extraction. These ids are NOT durable from one extraction to the next. These are used because the flowlines are cut, yet we retain the original NHDPlusID of each original segment to be able to relate it back to NHD.
+
+The analysis with the waterbodies must cut the flowlines, so he creates new IDs. Then these IDs can be referred to in case one flow line gets split into two and they have the same NHDPlusID.
