@@ -104,9 +104,17 @@ Successfully installed nhdnet-0.2.0 rtree-0.9.4
 
 Now, the ipynb should be able to execute the first code block.
 
-## Notes about the ID created by Ward
+## Notes about the lineID created by Ward
 
 The lineID is created in the notebook 'extract_flowlines_waterbodies'. In the ReadME of that folder, Ward states:
 > flowlines are identified using `lineID` from this point forward; this is a unique ID assigned to this specific run of the data extraction. These ids are NOT durable from one extraction to the next. These are used because the flowlines are cut, yet we retain the original NHDPlusID of each original segment to be able to relate it back to NHD.
 
 The analysis with the waterbodies must cut the flowlines, so he creates new IDs. Then these IDs can be referred to in case one flow line gets split into two and they have the same NHDPlusID.
+
+The lineIDs are created in the *flowlines.py* script, which I think comes from the nhdnet tool. lineIDs were used in the processing of the data *prepare_flowlines_waterbodies.py*. Upstream_id and downstream_id from joins was used in *find_nhd_dams.py* and *merge_waterbodies.py*. I still don't get how all these IDs relate.
+
+## Serialize
+I think this refers to the change in data structure. They create a feather file in this case.
+
+## NABD join
+Join NHD Reachcode with NABD
