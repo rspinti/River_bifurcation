@@ -118,3 +118,8 @@ I think this refers to the change in data structure. They create a feather file 
 
 ## NABD join
 Join NHD Reachcode with NABD
+
+## June 16, 2020 update
+We decided to use NHD V2 over HR because it contains COMID, so we will not have to merge HR and V2 to get the COMID. And for our purposes, we do not need the high res; moderate res is good enough for our purposes. However, the Flowlines in the V2 dataset are too large to read in as a geodataframe.
+
+I think that if we convert the flowline feature class to a csv, it will be easier to read in. However, I am trying to figure out how to keep the geometry of the features. As of now, the features do not have the geometry, which is necessary to plot in space. But we can read in the data!!!
