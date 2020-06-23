@@ -123,3 +123,8 @@ Join NHD Reachcode with NABD
 We decided to use NHD V2 over HR because it contains COMID, so we will not have to merge HR and V2 to get the COMID. And for our purposes, we do not need the high res; moderate res is good enough for our purposes. However, the Flowlines in the V2 dataset are too large to read in as a geodataframe.
 
 I think that if we convert the flowline feature class to a csv, it will be easier to read in. However, I am trying to figure out how to keep the geometry of the features. As of now, the features do not have the geometry, which is necessary to plot in space. But we can read in the data!!!
+
+## June 22, 2020
+The upstream count is working. I copied it from SARP 'stats.py'; however, it is counting wrong. I checked it with the data subset (small1019.csv).
+
+I also need to figure out the plotting. The geometry is a list of corrdinates in the csv. I also need to figure out how to plot by different colors based on if there is a dam present or not on a given flowline.
