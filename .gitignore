@@ -11,3 +11,12 @@
 *.spx
 *.xml
 *.zip
+data/nabd/nabd_fish_barriers_2012.dbf
+data/nabd/nabd_fish_barriers_2012.shp
+line_test.dbf
+line_test.shp
+line_test.cpg
+line_test.prj
+line_test.shx
+data/nabd/nabd_fish_barriers_2012.prj
+data/nabd/nabd_fish_barriers_2012.shx
