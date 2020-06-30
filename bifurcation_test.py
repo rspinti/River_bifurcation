@@ -6,20 +6,21 @@ import matplotlib.pyplot as plt
 from shapely import wkt
 from pathlib import Path
 gdrive = Path("/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/Rachel/Research/GIS/Layers/NHDPlusNationalData") #where csv live
+
 plt.style.use('classic')
 
 # %%
 # Read in the csv and set Hydroseq as the index
 ## test with only flowline attributes
-# test = pd.read_csv("small1019.csv", index_col='Hydroseq',
-#                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
-#                             'Pathlength', 'LENGTHKM', 'StartFlag',
-#                             'WKT', 'DamID'])
-## test with dams and flowlines
-test = pd.read_csv(gdrive/"sample_nabd_nhd.csv", index_col='Hydroseq',
-                   usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
+test = pd.read_csv("small1019.csv", index_col='Hydroseq',
+                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
                             'Pathlength', 'LENGTHKM', 'StartFlag',
                             'WKT', 'DamID'])
+## test with dams and flowlines
+# test = pd.read_csv(gdrive/"sample_nabd_nhd.csv", index_col='Hydroseq',
+#                     usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
+#                             'Pathlength', 'LENGTHKM', 'StartFlag',
+#                             'WKT', 'DamID'])
 # test_i=test.set_index('Hydroseq') #alternate way to set the index
 # after the fact
 
@@ -27,7 +28,7 @@ test = pd.read_csv(gdrive/"sample_nabd_nhd.csv", index_col='Hydroseq',
 test.insert(5, "step", np.zeros(len(test)), True)
 # fill in the NA's for the dam column with 0s
 test['DamID'] = test['DamID'].fillna(0)
-test.DamID = test.DamID.astype(int)
+# test.DamID = test.DamID.astype(int)
 # print(test.DamID.unique())
 # Copying over the dam IDs into a new fragment column
 test['Frag'] = test['DamID']
@@ -65,7 +66,7 @@ for ind in range(len(queue)):   #go through queue
 
     # Walk downstream until you hit a dam or a segment thats
     # already been processed
-    while [damflag == 0]:   #while there is no damID
+    while damflag == 0:   #while there is no damID
         step = step + 1   #next step
         dtemp = segments.loc[temploc, 'DnHydroseq']  #select downstream flowline
         # print(dtemp)
