@@ -12,15 +12,15 @@ plt.style.use('classic')
 # %%
 # Read in the csv and set Hydroseq as the index
 ## test with only flowline attributes
-test = pd.read_csv("small1019.csv", index_col='Hydroseq',
-                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
-                            'Pathlength', 'LENGTHKM', 'StartFlag',
-                            'WKT', 'DamID'])
-## test with dams and flowlines
-# test = pd.read_csv(gdrive/"sample_nabd_nhd.csv", index_col='Hydroseq',
+# test = pd.read_csv("small1019.csv", index_col='Hydroseq',
 #                     usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
 #                             'Pathlength', 'LENGTHKM', 'StartFlag',
 #                             'WKT', 'DamID'])
+## test with dams and flowlines
+test = pd.read_csv(gdrive/"sample_nabd_nhd.csv", index_col='Hydroseq',
+                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
+                            'Pathlength', 'LENGTHKM', 'StartFlag',
+                            'WKT', 'DamID'])
 # test_i=test.set_index('Hydroseq') #alternate way to set the index
 # after the fact
 
@@ -66,7 +66,7 @@ for ind in range(len(queue)):   #go through queue
 
     # Walk downstream until you hit a dam or a segment thats
     # already been processed
-    while damflag == 0:   #while there is no damID
+    while damflag is None:   #while there is no damID
         step = step + 1   #next step
         dtemp = segments.loc[temploc, 'DnHydroseq']  #select downstream flowline
         # print(dtemp)
@@ -100,13 +100,27 @@ for ind in range(len(queue)):   #go through queue
 # %matplotlib inline
 print(segments.columns)
 segments['Frag'] = segments['Frag'].fillna(0)
-print(fragments.head(10))
+# print(fragments.head(10))
+print(damflag)
+print(type(damflag))
 
 fig, ax = plt.subplots(1, 2)
 # segments.plot(column='LENGTHKM', ax=ax[0], legend=True)
 segments.plot(column='DamID', ax=ax[0], legend=True)
 segments.plot(column='Frag', ax=ax[1], legend=True)
 # segments.plot(column='step', ax=ax[1], legend=True)
+plt.show()
+
+#Plot where dams are
+colors = []
+for i in range(len(segments)):   
+    if (pd.isnull(segments['DamID'][i])):
+        colors.append('b')
+    else:
+        colors.append('r')
+        
+segments.plot(color=colors)
+# plt.savefig('Small_dataset.png', dpi = 500)
 plt.show()
 
 # %%
