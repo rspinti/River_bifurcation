@@ -128,3 +128,28 @@ I think that if we convert the flowline feature class to a csv, it will be easie
 The upstream count is working. I copied it from SARP 'stats.py'; however, it is counting wrong. I checked it with the data subset (small1019.csv).
 
 I also need to figure out the plotting. The geometry is a list of corrdinates in the csv. I also need to figure out how to plot by different colors based on if there is a dam present or not on a given flowline.
+
+## July 10, 2020
+Laura has written a code that walks us up and down the networks. Now, we need to test it and make sure it works on large and small basins.
+
+We need to preprocess the dam data to get rid of duplicates. The dams will be filtered like this:
+  - If the duplicates have the same storage values, we will keep the first entry and delete the others.
+  - If the duplicates have different storage values, we will add the storage together and make a single entry.
+  - If there is no storage, we will delete the duplicates.
+
+The indices from Grill's paper that we are using are:
+  - Degree of Fragmentation (DOF)
+    - Variables needed:
+      - Natural average discharge of river reach (QC_MA)
+      - Natual average discharge at the barrier ()
+      - Mazimum discharge range beyond which no fragmentation effects are expected ()
+
+  - Degree of Regulation
+    - Variables needed:
+      - storage volume upstream of river reach (Normal or Maximum storage)
+      - natural average discharge volume per year  (QC_MA)
+
+  - Consumptive Water Use (USE)
+    - Variables needed:
+      - natural long-term discharge without human influences (QC_MA)
+      - average long-term discharge after human abstractions and use (QA_MA)
