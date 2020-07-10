@@ -36,10 +36,22 @@ test2Geo = gp.GeoDataFrame(test2, geometry='Coordinates')
 segments = test2Geo.copy()
 
 # %%
+<<<<<<< HEAD
 # STEP 1: Making fragments
+=======
+""" ## Dont need to do this anymore
+## make a data frame for the fragments
+#frag_list = segments.DamID.unique()
+##flength = np.zeros(len(frag_list))
+#fragments = pd.DataFrame(data={'flength': np.zeros(len(frag_list)),
+#    'Ndam': np.zeros(len(frag_list)),
+#    'DnSeg': np.zeros(len(frag_list))}, index=frag_list) """
+
+# %%
+>>>>>>> master
 # looping to make fragments
 # To do - calculate fragment totals  -- total number of dams upstream
-#  Total storage upstream 
+#  Total storage upstream
 
 queue = segments.loc[segments.UpHydroseq == 0]
 # Initail number to use for fragments that are existing the  domain
@@ -117,16 +129,16 @@ while len(queue) > 0:
     print("Removing From Queue:", tempstart)
 
 # test.loc[queue.index[ind], 'step'] = istep
-    
+
 # %%
 # Doing some summaries to cross check calculations
 #print(fragments)
-print(segments.loc[segments.Frag == 0]) #check for any segments not covered 
+print(segments.loc[segments.Frag == 0]) #check for any segments not covered
 temp = segments.pivot_table('LENGTHKM', index='Frag', aggfunc=sum)
 print(temp)
 print(sum(temp['LENGTHKM']))
 print(sum(segments.LENGTHKM))
-# alternate approach to pivot tabel 
+# alternate approach to pivot tabel
 # segments.groupby('Frag')[['LENGTHKM']].sum()
 
 # %%
@@ -135,9 +147,14 @@ print(sum(segments.LENGTHKM))
 # Total fragment length calculated using a pivot table from segment lengths
 fragments = segments.pivot_table('LENGTHKM', index='Frag', aggfunc=sum)
 
+<<<<<<< HEAD
 # Determining downstream segment ID -- 
 # Join in the downstream segment for the segments that that contains the dam
 # Using a pivot table with a sum here since there should only be one 
+=======
+#Join in the downstream segment for the segmane that contains the dam
+# Using a pivot table with a sum here since there should only be one
+>>>>>>> master
 # value for a each non zero DamID and the zero will not be
 # included in the join
 frgDN=segments.pivot_table('DnHydroseq', index='DamID', aggfunc=sum)
@@ -190,10 +207,14 @@ while len(queuef) > 0:
     queuef = queuef.drop(queuef.index[0])
 
 
+<<<<<<< HEAD
 # Remove the duplicate values in each list
 for key in UpDict:
     print(key)
     UpDict[key] = list(dict.fromkeys(UpDict[key]))
+=======
+#Next need to get aggregations by upstream area for fragments.
+>>>>>>> master
 
 # %%
 # STEP 4 - Aggregate by upstream area
@@ -217,3 +238,26 @@ segments.plot(column='DamID', ax=ax[0], legend=True)
 segments.plot(column='Frag', ax=ax[1], legend=True)
 #segments.plot(column='step', ax=ax[1], legend=True)
 plt.show()
+<<<<<<< HEAD
+=======
+
+#Plot where dams are
+colors = []
+for i in range(len(segments)):
+    if (pd.isnull(segments['DamID'][i])):
+        colors.append('b')
+    else:
+        colors.append('r')
+
+segments.plot(color=colors)
+# plt.savefig('Small_dataset.png', dpi = 500)
+plt.show()
+
+# %%
+# #index testing
+# #ind=test.index[[1,2,50]]
+# print(test.loc[550201446])
+# test['LENGTHKM'][1:3]
+# print(test.at[550201446, 'LENGTHKM'])
+# test.at[550201446, 'LENGTHKM']= 17
+>>>>>>> master
