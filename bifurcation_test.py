@@ -33,19 +33,10 @@ test2.Coordinates = test2.Coordinates.astype(str)
 test2['Coordinates'] = test2['Coordinates'].apply(wkt.loads)
 test2Geo = gp.GeoDataFrame(test2, geometry='Coordinates')
 
-# %%
 segments = test2Geo.copy()
 
 # %%
-""" ## Dont need to do this anymore
-## make a data frame for the fragments
-#frag_list = segments.DamID.unique()
-##flength = np.zeros(len(frag_list))
-#fragments = pd.DataFrame(data={'flength': np.zeros(len(frag_list)), 
-#    'Ndam': np.zeros(len(frag_list)),
-#    'DnSeg': np.zeros(len(frag_list))}, index=frag_list) """
-
-# %%
+# STEP 1: Making fragments
 # looping to make fragments
 # To do - calculate fragment totals  -- total number of dams upstream
 #  Total storage upstream 
@@ -139,46 +130,90 @@ print(sum(segments.LENGTHKM))
 # segments.groupby('Frag')[['LENGTHKM']].sum()
 
 # %%
+# STEP 2: Making a fragment data frame and aggregated by fragment
 # Fill in fragment information
-#Total fragment length calculated using a pivot table from segment lengths
+# Total fragment length calculated using a pivot table from segment lengths
 fragments = segments.pivot_table('LENGTHKM', index='Frag', aggfunc=sum)
 
-#Join in the downstream segment for the segmane that contains the dam
+# Determining downstream segment ID -- 
+# Join in the downstream segment for the segments that that contains the dam
 # Using a pivot table with a sum here since there should only be one 
 # value for a each non zero DamID and the zero will not be
-#included in the join
+# included in the join
 frgDN=segments.pivot_table('DnHydroseq', index='DamID', aggfunc=sum)
 fragments = fragments.join(frgDN)
 
+# Get the downstream fragment ID - 
 # Use the downstream segment for each fragment to get its
 # downstream fragment ID
 fragments2 = fragments.merge(segments.Frag, left_on='DnHydroseq',  right_on='Hydroseq', suffixes=('_left', '_right'), how='left')
 fragments2.index = fragments.index
-fragments2.rename(columns={'Frag': 'FragDn'})
+fragments2 = fragments2.rename(columns={'Frag': 'FragDn'})
 
+# Identify headwater fragments  - 
 # Mark fragments that are headwaters
 headlist = segments.loc[segments.UpHydroseq == 0, 'Frag'].unique()
 fragments2['HeadFlag'] = np.zeros(len(fragments2))
 fragments2.loc[headlist, 'HeadFlag'] = 1
 
-print(fragments2)
+# %%
+# STEP 3 : Make a list of the upstream fragments for every fragment 
+#  Make a dictionary using the fragments as Keys
+#  with a list for every fragment of its upstream fragments
 
-#Next need to get aggregations by upstream area for fragments. 
+# Initialize the dictionary
+UpDict = dict.fromkeys(fragments2.index)
+
+#Loop through and initialize every fragment list with itself
+for ind in range(len(fragments2)):
+    ftemp = fragments2.index[ind]
+    UpDict[ftemp]=[ftemp]
+    print(ftemp)
+
+#Make a list of all the headwater fragments to start from
+queuef = fragments2.loc[fragments2.HeadFlag == 1]
+
+# Work downstream adding to the fragment lists
+while len(queuef) > 0:
+    DnFrag = queuef.FragDn.iloc[0]
+    ftemp = queuef.index[0]
+    print("Fragment:", ftemp, "Downstream:", DnFrag)
+
+    # if the downstream fragment exists adppend the current fagments list to it
+    # and add the downstream fragment to the queue
+    if not np.isnan(DnFrag):
+        print("HERE")
+        UpDict[DnFrag].extend(UpDict[ftemp])
+        queuef = queuef.append(fragments2.loc[DnFrag])
+    
+    #remove the current fragment from the queue
+    queuef = queuef.drop(queuef.index[0])
+
+
+# Remove the duplicate values in each list
+for key in UpDict:
+    print(key)
+    UpDict[key] = list(dict.fromkeys(UpDict[key]))
 
 # %%
-print(segments.columns)
-segments['Frag'] = segments['Frag'].fillna(0)
+# STEP 4 - Aggregate by upstream area
+fragments2['NDam'] = np.zeros(len(fragments2))
+fragments2['LengthUp'] = np.zeros(len(fragments2))
+
+for key in UpDict:
+    print(key)
+    fragments2.loc[key, 'NDam'] = len(UpDict[key])
+    fragments2.loc[key, 'LengthUp'] = fragments2.loc[UpDict[key],
+                                                     'LENGTHKM'].sum()
+
+
+# %%
+# Some plotting 
+#print(segments.columns)
+#segments['Frag'] = segments['Frag'].fillna(0)
 
 fig, ax = plt.subplots(1, 2)
 segments.plot(column='DamID', ax=ax[0], legend=True)
 segments.plot(column='Frag', ax=ax[1], legend=True)
 #segments.plot(column='step', ax=ax[1], legend=True)
 plt.show()
-
-# %%
-# #index testing
-# #ind=test.index[[1,2,50]]
-# print(test.loc[550201446])
-# test['LENGTHKM'][1:3]
-# print(test.at[550201446, 'LENGTHKM'])
-# test.at[550201446, 'LENGTHKM']= 17
