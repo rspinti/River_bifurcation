@@ -141,8 +141,8 @@ The indices from Grill's paper that we are using are:
   - Degree of Fragmentation (DOF)
     - Variables needed:
       - Natural average discharge of river reach (QC_MA)
-      - Natual average discharge at the barrier ()
-      - Mazimum discharge range beyond which no fragmentation effects are expected ()
+      - Natural average discharge at the barrier ()
+      - Mazimum discharge range beyond which no fragmentation effects are expected (calculate a percentage?)
 
   - Degree of Regulation
     - Variables needed:
@@ -152,4 +152,4 @@ The indices from Grill's paper that we are using are:
   - Consumptive Water Use (USE)
     - Variables needed:
       - natural long-term discharge without human influences (QC_MA)
-      - average long-term discharge after human abstractions and use (QA_MA)
+      - average long-term discharge after human abstractions and use (QA_MA or QE_MA)
