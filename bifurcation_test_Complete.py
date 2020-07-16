@@ -64,7 +64,7 @@ while len(queue) > 0:
 
     # Walk downstream until you hit a dam or a segment thats
     # already been processed
-    while ftemp == 0:
+    while ftemp is None:
         step = step + 1
         dtemp = segments.loc[temploc, 'DnHydroseq']  #ID of downstream segment
 
