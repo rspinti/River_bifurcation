@@ -8,10 +8,17 @@ plt.style.use('classic')
 
 # %%
 # Read in the csv and set Hydroseq as the index
-test = pd.read_csv("small1019.csv", index_col='Hydroseq',
-                   usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
-                            'Pathlength', 'LENGTHKM', 'StartFlag',
-                            'WKT', 'DamID'])
+
+## Small test basin
+# test = pd.read_csv("small1019.csv", index_col='Hydroseq',
+#                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
+#                             'Pathlength', 'LENGTHKM', 'StartFlag',
+#                             'WKT', 'DamID'])
+## Colorado river basin
+test = pd.read_csv('colorado.csv',usecols=['Hydroseq', 'UpHydroseq', 
+                                           'DnHydroseq','Pathlength', 
+                                           'LENGTHKM', 'StartFlag',
+                                           'WKT', 'DamID'])
 # test_i=test.set_index('Hydroseq') #alternate way to set the indes
 # after the fact
 
@@ -24,6 +31,12 @@ test['Frag'] = test['DamID']
 # make a column to indicate if a dam is present or not
 test['DamCount'] = np.zeros(len(test))
 test.loc[test.DamID>0, 'DamCount'] = 1
+
+# Fix the hydroseq columns, so they are integers
+test['UpHydroseq'] = test['UpHydroseq'].round(decimals=0)
+test['DnHydroseq'] = test['DnHydroseq'].round(decimals=0)
+test['Hydroseq'] = test['Hydroseq'].round(decimals=0)
+test.set_index('Hydroseq')
 
 
 # %%
