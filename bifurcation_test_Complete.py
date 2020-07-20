@@ -16,7 +16,7 @@ plt.style.use('classic')
 #                             'WKT', 'DamID'])
 ## Specify the run_name...
 run_name = 'Colorado'
-test = pd.read_csv('colorado.csv',usecols=['Hydroseq', 'UpHydroseq', 
+test = pd.read_csv(run_name+'.csv',usecols=['Hydroseq', 'UpHydroseq', 
                                            'DnHydroseq','Pathlength', 
                                            'LENGTHKM', 'StartFlag',
                                            'WKT', 'DamID'])
