@@ -14,7 +14,8 @@ plt.style.use('classic')
 #                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
 #                             'Pathlength', 'LENGTHKM', 'StartFlag',
 #                             'WKT', 'DamID'])
-## Colorado river basin
+## Specify the run_name...
+run_name = 'Colorado'
 test = pd.read_csv('colorado.csv',usecols=['Hydroseq', 'UpHydroseq', 
                                            'DnHydroseq','Pathlength', 
                                            'LENGTHKM', 'StartFlag',
