@@ -160,7 +160,7 @@ fragments = fragments.join(frgDN)
 # Get the downstream fragment ID -
 # Use the downstream segment for each fragment to get its
 # downstream fragment ID
-fragments2 = fragments.merge(segments.Frag, left_on='DnHydroseq',  right_on='Hydroseq', suffixes=('_left', '_right'), how='left')
+fragments2 = fragments.merge(segments.Frag, left_on='DnHydroseq',  right_on=segments.index, suffixes=('_left', '_right'), how='left')
 fragments2.index = fragments.index
 fragments2 = fragments2.rename(columns={'Frag': 'FragDn'})
 
