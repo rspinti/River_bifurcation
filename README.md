@@ -153,3 +153,5 @@ The indices from Grill's paper that we are using are:
     - Variables needed:
       - natural long-term discharge without human influences (QC_MA)
       - average long-term discharge after human abstractions and use (QA_MA or QE_MA)
+
+## July 21, 2020

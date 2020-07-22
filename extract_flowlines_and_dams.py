@@ -31,10 +31,10 @@ nabd["DamID"] = range(len(nabd.COMID))  #add DamID
 
 # %%
 # Choose the major river basin to RUN
-run_name = 'Colorado'  #type river basin name
+run_name = 'Mississippi'  #type river basin name
 #run name options
 # ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes', 
-#  'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic'] 
+#  'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
 
 # Change REACHCODE to 2-digit format
 flowlines['REACHCODE'] = flowlines['REACHCODE']/(10**12) #convert Reachcode to HUC 2 format
@@ -55,8 +55,8 @@ major_basins = {'California' : [18],
                 'Rio Grande' : [13],
                 'South Atlantic' : [3]}
 # print(major_basins)
-
-# Based ob the run name, a different basin will be selected
+    
+# Based on the run name, a different basin will be selected
 if run_name == 'California':
     california = flowlines.loc[(flowlines['REACHCODE'] == major_basins[run_name][0])]
     nabd_nhd_join = nabd.merge(california, how= 'right', on='COMID') # Merge NABD and NHD
@@ -90,7 +90,7 @@ if run_name == 'Mississippi':
                                 (flowlines['REACHCODE'] == major_basins[run_name][4])|
                                 (flowlines['REACHCODE'] == major_basins[run_name][5])]
     nabd_nhd_join = nabd.merge(mississippi, how= 'right', on='COMID') # Merge NABD and NHD
-
+    
 if run_name == 'North Atlantic':
     north_atlantic = flowlines.loc[(flowlines['REACHCODE'] == major_basins[run_name][0])|
                                    (flowlines['REACHCODE'] == major_basins[run_name][1])]

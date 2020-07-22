@@ -8,14 +8,16 @@ plt.style.use('classic')
 
 # %%
 # Read in the csv and set Hydroseq as the index
+## Specify the run_name...
+run_name = 'Mississippi'
 
-## Small test basin
+## What was working, but was a bug
 # test = pd.read_csv("small1019.csv", index_col='Hydroseq',
 #                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
 #                             'Pathlength', 'LENGTHKM', 'StartFlag',
 #                             'WKT', 'DamID'])
-## Specify the run_name...
-run_name = 'Colorado'
+
+# Fix: take out the index_col
 test = pd.read_csv(run_name+'.csv',usecols=['Hydroseq', 'UpHydroseq', 
                                            'DnHydroseq','Pathlength', 
                                            'LENGTHKM', 'StartFlag',
@@ -38,7 +40,6 @@ test['UpHydroseq'] = test['UpHydroseq'].round(decimals=0)
 test['DnHydroseq'] = test['DnHydroseq'].round(decimals=0)
 test['Hydroseq'] = test['Hydroseq'].round(decimals=0)
 test.set_index('Hydroseq')
-
 
 # %%
 # test.rename(columns={'WKT': 'Coordinates'}) #rename column
@@ -78,7 +79,7 @@ while len(queue) > 0:
 
     # Walk downstream until you hit a dam or a segment thats
     # already been processed
-    while ftemp is None:
+    while ftemp == 0:
         step = step + 1
         dtemp = segments.loc[temploc, 'DnHydroseq']  #ID of downstream segment
 
@@ -229,4 +230,12 @@ fig, ax = plt.subplots(1, 2)
 segments.plot(column='DamID', ax=ax[0], legend=True)
 segments.plot(column='Frag', ax=ax[1], legend=True)
 #segments.plot(column='step', ax=ax[1], legend=True)
+plt.show()
+
+## Rachel testing the plotting to see what happens with Fragments
+fig, ax = plt.subplots(1, 2)
+x = segments[segments['Frag'] <12000]
+x.plot(column='Frag', ax=ax[0], legend=True)
+y = segments[segments['Frag'] >12000]
+y.plot(column='Frag', ax=ax[1], legend=True)
 plt.show()
