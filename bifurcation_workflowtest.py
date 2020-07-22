@@ -4,20 +4,18 @@ import numpy as np
 import geopandas as gp
 import matplotlib.pyplot as plt
 from shapely import wkt
+#import bifurcate
+from bifurcate import my_function
+from bifurcate import my_function2
+from bifurcate import make_fragments
 plt.style.use('classic')
 
 # %%
-# Read in the csv and set Hydroseq as the index
+# Read in the csv and set Hydroseq as the index -- this is the small test case
 test = pd.read_csv("small1019.csv", index_col='Hydroseq',
-                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
+                   usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
                             'Pathlength', 'LENGTHKM', 'StartFlag',
                             'WKT', 'DamID'])
-
-#test = pd.read_csv("small1019.csv", 
-#                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
-#                            'Pathlength', 'LENGTHKM', 'StartFlag',
-#                            'WKT', 'DamID'])
-
 # test_i=test.set_index('Hydroseq') #alternate way to set the indes
 # after the fact
 
@@ -29,14 +27,45 @@ test['DamID'] = test['DamID'].fillna(0)
 test['Frag'] = test['DamID']
 # make a column to indicate if a dam is present or not
 test['DamCount'] = np.zeros(len(test))
-test.loc[test.DamID>0, 'DamCount'] = 1
+test.loc[test.DamID > 0, 'DamCount'] = 1
 
-# Fix the hydroseq columns, so they are integers
-#test['UpHydroseq'] = test['UpHydroseq'].round(decimals=0)
-#test['DnHydroseq'] = test['DnHydroseq'].round(decimals=0)
-#test['Hydroseq'] = test['Hydroseq'].round(decimals=0)
-#test.set_index('Hydroseq')
+# %%
+#Commented this out this was Rachels alternate workflow for doing a whole run
 
+## # Read in the csv and set Hydroseq as the index
+## ## Specify the run_name...
+## run_name = 'Mississippi'
+## 
+## ## What was working, but was a bug
+## # test = pd.read_csv("small1019.csv", index_col='Hydroseq',
+## #                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
+## #                             'Pathlength', 'LENGTHKM', 'StartFlag',
+## #                             'WKT', 'DamID'])
+## 
+## # Fix: take out the index_col
+## test = pd.read_csv(run_name+'.csv',usecols=['Hydroseq', 'UpHydroseq', 
+##                                            'DnHydroseq','Pathlength', 
+##                                            'LENGTHKM', 'StartFlag',
+##                                            'WKT', 'DamID'])
+## # test_i=test.set_index('Hydroseq') #alternate way to set the indes
+## # after the fact
+## 
+## # add a column to keep track of steps
+## test.insert(5, "step", np.zeros(len(test)), True)
+## # fill in the NA's for the dam column with 0s
+## test['DamID'] = test['DamID'].fillna(0)
+## # Copying over the dam IDs into a new fragment column
+## test['Frag'] = test['DamID']
+## # make a column to indicate if a dam is present or not
+## test['DamCount'] = np.zeros(len(test))
+## test.loc[test.DamID>0, 'DamCount'] = 1
+## 
+## # Fix the hydroseq columns, so they are integers
+## test['UpHydroseq'] = test['UpHydroseq'].round(decimals=0)
+## test['DnHydroseq'] = test['DnHydroseq'].round(decimals=0)
+## test['Hydroseq'] = test['Hydroseq'].round(decimals=0)
+## test.set_index('Hydroseq')
+## 
 # %%
 # test.rename(columns={'WKT': 'Coordinates'}) #rename column
 test2 = test.rename(columns={'WKT': 'Coordinates'})
@@ -45,6 +74,9 @@ test2['Coordinates'] = test2['Coordinates'].apply(wkt.loads)
 test2Geo = gp.GeoDataFrame(test2, geometry='Coordinates')
 
 segments = test2Geo.copy()
+
+# %%
+segments2=make_fragments(segments)
 
 # %%
 # STEP 1: Making fragments
@@ -218,13 +250,9 @@ plt.show()
 
 # %%
 ## Rachel testing the plotting to see what happens with Fragments
-## Was testing HUC4 1019
 fig, ax = plt.subplots(1, 2)
-x = segments[segments['Frag'] <12000]  #this filter value might change 
-                                  # depending on the range of vlaues for Frags
+x = segments[segments['Frag'] <12000]
 x.plot(column='Frag', ax=ax[0], legend=True)
-y = segments[segments['Frag'] >12000]  #this filter value might change 
+y = segments[segments['Frag'] >12000]
 y.plot(column='Frag', ax=ax[1], legend=True)
 plt.show()
-
-# %%
