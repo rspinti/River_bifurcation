@@ -127,7 +127,7 @@ I think that if we convert the flowline feature class to a csv, it will be easie
 ## June 22, 2020
 The upstream count is working. I copied it from SARP 'stats.py'; however, it is counting wrong. I checked it with the data subset (small1019.csv).
 
-I also need to figure out the plotting. The geometry is a list of corrdinates in the csv. I also need to figure out how to plot by different colors based on if there is a dam present or not on a given flowline.
+I also need to figure out the plotting. The geometry is a list of coordinates in the csv. I also need to figure out how to plot by different colors based on if there is a dam present or not on a given flowline.
 
 ## July 10, 2020
 Laura has written a code that walks us up and down the networks. Now, we need to test it and make sure it works on large and small basins.
@@ -155,3 +155,38 @@ The indices from Grill's paper that we are using are:
       - average long-term discharge after human abstractions and use (QA_MA or QE_MA)
 
 ## July 21, 2020
+Laura's code has been tested and it works on different configurations of dams. There were two bugs associated with the
+Hydroseq value/index and the ftemp == 0. Turns out that ftemp had negative values in the small test basin. Still
+working on the Hydroseq bug.
+
+I grouped the HUC 2s by major U.S. river basins as thus:
+- 'California' : [18]
+- 'Colorado' : [14, 15]
+- 'Columbia' : [17]
+- 'Great Basin' : [16]
+- 'Great Lakes' : [4]
+- 'Gulf Coast' : [12]
+- 'Mississippi' : [5, 6, 7, 8, 10, 11]
+- 'North Atlantic' : [1, 2]
+- 'Red' : [9]
+- 'Rio Grande' : [13]
+- 'South Atlantic' : [3]
+
+We determined that the dam duplicates all have the same storage. Thus, we will keep the first dam entry and its storage value.
+We will delete the rest of the duplicates and mention it in our report. We are going to filter out all dam entries with zero
+storage because the the NIDID documentation says, ' For normally dry flood control dams, the normal storage will be a zero value.'
+Thus, the dams are mainly for flood control and are not affecting the river flow as much. We will keep blanks because their
+storage value is unknown. Again from the NIDID documentation, 'If unknown, the value will be blank and not zero.'
+
+
+I need to figure out if the script will be affected by loops in the flowlines and how that will affect our result. I also 
+need to check for underground conduits. We will most likely keep those because they connect otherwise discontinuous streams.
+We ARE KEEPING isolated lines because they are added to the fexit variable as not having a fragment ID. In this sense, they
+are already accounted for. Also where did the discharge estimates come from in NHD.
+
+### About discharge measurements
+- EROM is only valid from 1971 - 2000
+- They used USGS gage estimates of flow
+- Created runoff grids using a water balance that included precip, PET, ET, and soil moisture
+  - ET losses not allowed to exceed precip
+- Used a regression to develop an unit runoff equation
