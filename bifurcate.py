@@ -1,11 +1,5 @@
 import numpy as np
 
-def my_function():
-  print("Hello from a very nice function")
-
-def my_function2():
-    print("HI again")
-
 def make_fragments(segments, exit_id=999000):
     """Create stream fragments from stream segments based on dam locations.
 
@@ -37,7 +31,7 @@ def make_fragments(segments, exit_id=999000):
         segments (pandas.DataFrame): An updated dataframe with a fragments column.
     """
 
-    # Add a column for Fragment #'s and initilze with teh DamIDs
+    # Add a column for Fragment #'s and initilze with the DamIDs
     segments['Frag'] = segments['DamID']
     #print(segments['Frag'])
 
@@ -133,7 +127,8 @@ def agg_by_frag(segments):
     # Making a fragment data frame and aggregated by fragment
     # Fill in fragment information
     # Total fragment length calculated using a pivot table from segment lengths
-    fragments0 = segments.pivot_table('LENGTHKM', index='Frag', aggfunc=sum)
+    #fragments0 = segments.pivot_table('LENGTHKM', index='Frag', aggfunc=sum)
+    fragments0 = segments.pivot_table(values=['LENGTHKM', 'DamCount'], index='Frag', aggfunc=sum)
     
     # Determining downstream segment ID --
     # Join in the downstream segment for the segments that that contains the dam
@@ -156,6 +151,9 @@ def agg_by_frag(segments):
     headlist = segments.loc[segments.UpHydroseq == 0, 'Frag'].unique()
     fragments['HeadFlag'] = np.zeros(len(fragments))
     fragments.loc[headlist, 'HeadFlag'] = 1
+
+    #Gettting the # of dams on a segment
+
 
     return fragments
 
@@ -232,13 +230,16 @@ def agg_by_frag_up(fragments, UpDict):
         fragments (pandas.DataFrame): appended fragments dataframe.
     """
 
-    fragments['NDam'] = np.zeros(len(fragments))
+    fragments['NFragUp'] = np.zeros(len(fragments))
     fragments['LengthUp'] = np.zeros(len(fragments))
+    fragments['NDamUp'] = np.zeros(len(fragments))
 
     for key in UpDict:
         #print(key)
-        fragments.loc[key, 'NDam'] = len(UpDict[key])
+        fragments.loc[key, 'NFragUp'] = len(UpDict[key])
         fragments.loc[key, 'LengthUp'] = fragments.loc[UpDict[key],
                                                      'LENGTHKM'].sum()
+        fragments.loc[key, 'NDamUp'] = fragments.loc[UpDict[key],
+                                                       'DamCount'].sum()
     
     return fragments
