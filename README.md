@@ -178,7 +178,6 @@ storage because the the NIDID documentation says, ' For normally dry flood contr
 Thus, the dams are mainly for flood control and are not affecting the river flow as much. We will keep blanks because their
 storage value is unknown. Again from the NIDID documentation, 'If unknown, the value will be blank and not zero.'
 
-
 I need to figure out if the script will be affected by loops in the flowlines and how that will affect our result. I also 
 need to check for underground conduits. We will most likely keep those because they connect otherwise discontinuous streams.
 We ARE KEEPING isolated lines because they are added to the fexit variable as not having a fragment ID. In this sense, they
@@ -190,3 +189,13 @@ are already accounted for. Also where did the discharge estimates come from in N
 - Created runoff grids using a water balance that included precip, PET, ET, and soil moisture
   - ET losses not allowed to exceed precip
 - Used a regression to develop an unit runoff equation
+
+## July 28, 2020
+Two bugs were found in the code this week. There are duplicate hydrosequence values because multiple dams lie on the same flowline.
+To account for this, we will only report the largest DamID of the duplicates. We will sum the storage of all the dams and add the total
+number of duplicates to the number of dams upstream. The second bug was that the Fragment index is a list of values, not a list of the IDs.
+
+We will filter out coastlines because we do not want to worry about what happens when the downstream flowline is a coastline.
+We also decided to keep zero storage values, so we can turn those on and off for comparison.
+
+We determined that we need to discuss what metrics and indices we want to include in our analysis. 
