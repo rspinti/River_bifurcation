@@ -4,6 +4,7 @@ import numpy as np
 import geopandas as gp
 import matplotlib.pyplot as plt
 from shapely import wkt
+import datetime
 plt.style.use('classic')
 
 # %%
@@ -13,6 +14,7 @@ test = pd.read_csv("small1019.csv", index_col='Hydroseq',
                             'Pathlength', 'LENGTHKM', 'StartFlag',
                             'WKT', 'DamID'])
 
+#extracted_HUC1019.csv
 #test = pd.read_csv("small1019.csv", 
 #                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
 #                            'Pathlength', 'LENGTHKM', 'StartFlag',
@@ -51,12 +53,13 @@ segments = test2Geo.copy()
 # looping to make fragments
 # To do - calculate fragment totals  -- total number of dams upstream
 #  Total storage upstream
-
+t1 = datetime.datetime.now()
 queue = segments.loc[segments.UpHydroseq == 0]
 # Initail number to use for fragments that are existing the  domain
 # Rather than hitting a dam. Exiting framents will start counting from
 # this number
-fexit = 11
+fexit = 12
+ii=0
 
 snum=0  #Counter for the segment starting points -- just for print purposes
 while len(queue) > 0:
@@ -68,6 +71,9 @@ while len(queue) > 0:
     templist = []   # make a list to store segments until you get to a dam
     templist.append(temploc)  # seed the list with the initial segment
     ftemp = segments.loc[temploc, 'Frag']  # Fragment # of current segment
+    #dtemp = segments.loc[temploc, 'DnHydroseq']
+    ii=ii+1
+    print(ii)
     print("Satarting headwater #", snum, "SegID", temploc,
           "damflag", ftemp)
 
@@ -82,6 +88,8 @@ while len(queue) > 0:
         if dtemp in segments.index:
             templist.append(dtemp)
             ftemp = segments.loc[dtemp, 'Frag']
+            ii=ii+1
+            print(ii)
             segments.loc[dtemp, 'step'] = step
             print("Step", step, "Downstream SegID", dtemp,
                   "Downstream Frag", ftemp)
@@ -102,20 +110,22 @@ while len(queue) > 0:
     segments.loc[templist, 'Frag'] = ftemp
 
 
-    # If it wasn't a terminal fragment
+    # If it wasn't a terminal fragment, and the downstream segment hasn't alread been assigned a FragID
     # add the downstream segment to the end of the queue
-    if temploc > 0:
-        newstart = segments.loc[temploc, 'DnHydroseq']
-        #add to the count of dams
-        #fragments.loc[ftemp, 'Ndam'] += segments.loc[temploc, 'DamCount']
-        if newstart in segments.index:
-            queue = queue.append(segments.loc[newstart])
-            print("Adding to Queue!", newstart)
+    if temploc > 0 :  
+        #if segments.loc[dtemp, 'Frag'] == 0:
+            newstart = segments.loc[temploc, 'DnHydroseq']
+            #add to the count of dams
+            #fragments.loc[ftemp, 'Ndam'] += segments.loc[temploc, 'DamCount']
+            if newstart in segments.index and segments.loc[newstart, 'Frag'] == 0:
+                queue = queue.append(segments.loc[newstart])
+                print("Adding to Queue!", newstart)
 
     # delete the segment that was just finished from the queue
     queue = queue.drop(tempstart)
     print("Removing From Queue:", tempstart)
-
+t2 = datetime.datetime.now()
+print( "Segments Timing:", (t2-t1))
 
 # %%
 # Doing some summaries to cross check calculations

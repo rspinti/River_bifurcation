@@ -4,16 +4,18 @@ import numpy as np
 import geopandas as gp
 import matplotlib.pyplot as plt
 import bifurcate as bfc
+import datetime
 from shapely import wkt
 plt.style.use('classic')
 
 # %%
 # Read in the csv and set Hydroseq as the index
-test = pd.read_csv("small1019.csv", index_col='Hydroseq',
+test = pd.read_csv("extracted_HUC1019.csv", index_col='Hydroseq',
                     usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
                            'Pathlength', 'LENGTHKM', 'StartFlag',
                             'WKT', 'DamID'])
-
+#"small1019.csv"
+# "extracted_HUC1019.csv"
 #test = pd.read_csv("small1019.csv", 
 #                   usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
 #                            'Pathlength', 'LENGTHKM', 'StartFlag',
@@ -53,17 +55,32 @@ import importlib
 importlib.reload(bfc)
 
 #%%
+t1 = datetime.datetime.now() 
 # STEP1:  Make Fragments
-segments=bfc.make_fragments(segments, exit_id=11)
+segments=bfc.make_fragments(segments, exit_id=11, verbose=True)
+t2 = datetime.datetime.now()
+print("Make Fragments:", (t2-t1))
 
 # STEP 2: Making a fragment data frame and aggregated by fragment
 fragments = bfc.agg_by_frag(segments)
+t3 = datetime.datetime.now()
+print("Aggregate by fragments:", (t3-t2))
 
 # STEP 3: Map Upstream Fragments 
 UpDict = bfc.map_up_frag(fragments)
+t4 = datetime.datetime.now()
+print("Map Upstream fragments:", (t4-t3))
 
 #STEP 4: Aggregate by upstream area
 fragments=bfc.agg_by_frag_up(fragments, UpDict)
+t5 = datetime.datetime.now()
+
+print("---- TIMING SUMMARY -----")
+print("Make Fragments:", (t2-t1))
+print("Aggregate by fragments:", (t3-t2))
+print("Map Upstream fragments:", (t4-t3))
+print("Aggregate by upstream:", (t5-t4))
+print("Total Time:", (t5-t1))
 
 
 # %%
