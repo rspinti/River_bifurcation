@@ -1,6 +1,6 @@
 import numpy as np
 
-def make_fragments(segments, exit_id=999000):
+def make_fragments(segments, exit_id=999000, verbose=False):
     """Create stream fragments from stream segments based on dam locations.
 
     This function traverses through a stream network using NHD stream segment
@@ -52,8 +52,9 @@ def make_fragments(segments, exit_id=999000):
         templist = []   # make a list to store segments until you get to a dam
         templist.append(temploc)  # seed the list with the initial segment
         ftemp = segments.loc[temploc, 'Frag']  # Fragment # of current segment
-        print("Satarting headwater #", snum, "SegID", temploc,
-              "damflag", ftemp)
+        if verbose == True:
+            print("Satarting headwater #", snum, "SegID", temploc,
+                "damflag", ftemp)
 
         # Walk downstream until you hit a dam or a segment thats
         # already been processed
@@ -67,15 +68,18 @@ def make_fragments(segments, exit_id=999000):
                 templist.append(dtemp)
                 ftemp = segments.loc[dtemp, 'Frag']
                 segments.loc[dtemp, 'step'] = step
-                print("Step", step, "Downstream SegID", dtemp,
-                      "Downstream Frag", ftemp)
+                #if verbose == True:
+                #    print("Step", step, "Downstream SegID", dtemp,
+                #        "Downstream Frag", ftemp)
                 temploc = dtemp
 
             # If not then you have reached a terminal point
             # add another Fragment ID for this teminal fragment
             # And set the dam flag to the fragment ID
             else:
-                print("Step", step, "Ending", temploc)
+                if verbose == True:
+                    print("Step", step, "Ending", temploc)
+                
                 ftemp = exit_id+1  # New Fragment ID to be assigned
                 exit_id = exit_id+1
                 temploc = 0
@@ -91,9 +95,11 @@ def make_fragments(segments, exit_id=999000):
             newstart = segments.loc[temploc, 'DnHydroseq']
             #add to the count of dams
             #fragments.loc[ftemp, 'Ndam'] += segments.loc[temploc, 'DamCount']
-            if newstart in segments.index:
+            #if newstart in segments.index:
+            if newstart in segments.index and segments.loc[newstart, 'Frag'] == 0:
                 queue = queue.append(segments.loc[newstart])
-                print("Adding to Queue!", newstart)
+                if verbose == True:
+                    print("Adding to Queue!", newstart)
 
         # delete the segment that was just finished from the queue
         queue = queue.drop(tempstart)
