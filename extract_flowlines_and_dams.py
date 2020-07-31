@@ -42,7 +42,7 @@ major_basins = {'California' : [18],
                 'Great Basin' : [16],
                 'Great Lakes' : [4],
                 'Gulf Coast' : [12],
-                'Mississippi' : [5, 6, 7, 8, 10, 11],
+                'Mississippi' : [5, 6, 7, 8, 1019, 11],
                 'North Atlantic' : [1, 2],
                 'Red' : [9],
                 'Rio Grande' : [13],
@@ -94,18 +94,18 @@ else:
         gulf_coast = flowlines.loc[(flowlines['REACHCODE'] == major_basins[run_name][0])]
         nabd_nhd_join = nabd.merge(gulf_coast, how= 'right', on='COMID') # Merge NABD and NHD
 
-    if run_name == 'Mississippi':
-        mississippi = flowlines.loc[(flowlines['REACHCODE'] == major_basins[run_name][0])| 
-                                (flowlines['REACHCODE'] == major_basins[run_name][1])| 
-                                (flowlines['REACHCODE'] == major_basins[run_name][2])| 
-                                (flowlines['REACHCODE'] == major_basins[run_name][3]) |
-                                (flowlines['REACHCODE'] == major_basins[run_name][4])|
-                                (flowlines['REACHCODE'] == major_basins[run_name][5])]
-        nabd_nhd_join = nabd.merge(mississippi, how= 'right', on='COMID') # Merge NABD and NHD
-        
     # if run_name == 'Mississippi':
-    #     mississippi = flowlines.loc[(flowlines['REACHCODE'] == major_basins[run_name][4])]
+    #     mississippi = flowlines.loc[(flowlines['REACHCODE'] == major_basins[run_name][0])| 
+    #                             (flowlines['REACHCODE'] == major_basins[run_name][1])| 
+    #                             (flowlines['REACHCODE'] == major_basins[run_name][2])| 
+    #                             (flowlines['REACHCODE'] == major_basins[run_name][3]) |
+    #                             (flowlines['REACHCODE'] == major_basins[run_name][4])|
+    #                             (flowlines['REACHCODE'] == major_basins[run_name][5])]
     #     nabd_nhd_join = nabd.merge(mississippi, how= 'right', on='COMID') # Merge NABD and NHD
+        
+    if run_name == 'Mississippi':
+        mississippi = flowlines.loc[(flowlines['REACHCODE'] == major_basins[run_name][4])]
+        nabd_nhd_join = nabd.merge(mississippi, how= 'right', on='COMID') # Merge NABD and NHD
     
     if run_name == 'North Atlantic':
         north_atlantic = flowlines.loc[(flowlines['REACHCODE'] == major_basins[run_name][0])|
@@ -167,8 +167,8 @@ nabd_nhd_join.loc[nabd_nhd_join.DamID==0, 'DamCount'] = 0 #if the DamID is 0, ma
 nabd_nhd_join = nabd_nhd_join.set_index('Hydroseq')
 # %%
 # Creates new csv to run in bifurcation_test_Complete.py
-nabd_nhd_join.to_csv(run_name+'.csv')  
-# nabd_nhd_join.to_csv('extracted_HUC1019.csv') 
+# nabd_nhd_join.to_csv(run_name+'.csv')  
+nabd_nhd_join.to_csv('extracted_HUC1019.csv') 
 # nabd_nhd_join.to_csv(gdrive/'NHDPlusNationalData/sample_nabd_nhd.csv') 
 print('Finished writing nabd_nhd_join to csv..........', nabd_nhd_join.head(3))
 
