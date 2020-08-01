@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import geopandas as gp
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import bifurcate as bfc
 import datetime
 from shapely import wkt
@@ -87,7 +88,28 @@ print("Total Time:", (t5-t1))
 print(segments.loc[segments.Frag == 0])  # check for any segments not covered
 
 # %%
-segments.plot(column='Frag', legend=True)
+fig, ax = plt.subplots(1, 1)
+#gradient = np.linspace(2000, 4000, 256)
+#divider = make_axes_locatable(ax)
+#cax = divider.append_axes("right", size="5%", pad=0.1)
+#pcm = ax.pcolormesh(x, y, segments.Frag, vmin=-1., vmax=1., cmap='RdBu_r'
+#cbar = mpl.colorbar.ColorbarBase(ax, cmap=cm,
+#     norm=mpl.colors.Normalize(vmin=-0.5, vmax=1.5))
+#im=segments.plot(column='Frag', ax=ax,  legend=True, cmap='viridis_r',
+#           legend_kwds={'label': "Fragment #", 'orientation': "horizontal"})
+#fig.colorbar(im, ax=ax)
+#im.sett_clim(0,10)
+#plt.show()
+
+im=segments.plot(column='Frag', legend=True, cmap='viridis_r',
+              legend_kwds={'label': "Fragment #", 'orientation': "horizontal"})
+
+im.set_clim(0, 10)
+
+# %%
+segments.plot(column='Frag', legend=True, cmap='viridis_r',
+              legend_kwds={'label': "Fragment #", 'orientation': "horizontal"})
+
 
 
 # %%
