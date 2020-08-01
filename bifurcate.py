@@ -36,28 +36,40 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
     #segments['Frag'] = np.zeros(len(segments))
     #print(segments['Frag'])
 
-    #initialize queue with all segments with upstream ID of 0
-    queue = segments.loc[segments.UpHydroseq == 0]
-    print(len(queue))
 
-    #If the flag is on then also add segments who's upstream segment is not included
-    #or that are not any other segments downstream neighbor
-    if subwatershed: 
-        print("Including segments with upstream hydro seq not in segments list as headwaters")
-        for ii in segments.index: 
-            #print(ii)
-            upstream = segments.loc[ii, 'UpHydroseq']
-            #Check if the upstream neigbhor doesn't exist in the segments DF
-            if not upstream in segments.index and upstream != 0:
-                #print("adding segment",  ii, " upstream=", upstream, "queue length", len(queue))
-                queue = queue.append(segments.loc[ii])
+    # if the subwatershed option is true any segment which is not the
+    # downstream neigbhor of another segment is  identified as a headwater
+    # If not only grab those segments with an upstream  hydroseq = 0
+    if subwatershed:
+        intersect = np.intersect1d(segments.index, segments.DnHydroseq.values)
+        queue = segments[~segments.index.isin(intersect)]
+    else: 
+        #initialize queue with all segments with upstream ID of 0
+        queue = segments.loc[segments.UpHydroseq == 0]
+    #print(len(queue))
 
-            #Check if there are no segments which drain to this one
-            if not ii in segments.DnHydroseq.values:
-                #print("adding segment",  ii, "queue length", len(queue))
-                queue = queue.append(segments.loc[ii])
+    #record these segments as headwaters
+    segments['Headwater']=np.zeros(len(segments))
+    segments.loc[queue.index,'Headwater'] = 1
+
+    ## Old Queu steup -- need to delete
+    ##If the flag is on then also add segments who's upstream segment is not included
+    ##or that are not any other segments downstream neighbor
+    #if subwatershed: 
+    #    print("Including segments with upstream hydro seq not in segments list as headwaters")
+    #    for ii in segments.index: 
+    #        #print(ii)
+    #        upstream = segments.loc[ii, 'UpHydroseq']
+    #        #Check if the upstream neigbhor doesn't exist in the segments DF
+    #        if not upstream in segments.index and upstream != 0:
+    #            #print("adding segment",  ii, " upstream=", upstream, "queue length", len(queue))
+    #            queue = queue.append(segments.loc[ii])
+#
+    #        #Check if there are no segments which drain to this one
+    #        if not ii in segments.DnHydroseq.values:
+    #            #print("adding segment",  ii, "queue length", len(queue))
+    #            queue = queue.append(segments.loc[ii])
   
-    print(len(queue))
 
     # Initail number to use for fragments that are existing the  domain
     # Rather than hitting a dam. Exiting framents will start counting from
@@ -74,9 +86,9 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
         templist = []   # make a list to store segments until you get to a dam
         templist.append(temploc)  # seed the list with the initial segment
         ftemp = segments.loc[temploc, 'Frag']  # Fragment # of current segment
-        if verbose == True:
-            print("Satarting headwater #", snum, "SegID", temploc,
-                "damflag", ftemp)
+        #if verbose == True:
+        #    print("Satarting headwater #", snum, "SegID", temploc,
+        #        "damflag", ftemp)
 
         # Walk downstream until you hit a dam or a segment thats
         # already been processed
@@ -99,8 +111,8 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
             # add another Fragment ID for this teminal fragment
             # And set the dam flag to the fragment ID
             else:
-                if verbose == True:
-                    print("Step", step, "Ending", temploc)
+                #if verbose == True:
+                #    print("Step", step, "Ending", temploc)
                 
                 ftemp = exit_id+1  # New Fragment ID to be assigned
                 exit_id = exit_id+1
@@ -117,23 +129,23 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
             newstart = segments.loc[temploc, 'DnHydroseq']
             #add to the count of dams
             #fragments.loc[ftemp, 'Ndam'] += segments.loc[temploc, 'DamCount']
-            
+
             # If the downstream segment is in the index and it hasn't been processed yet
             if newstart in segments.index and segments.loc[newstart, 'Frag'] == 0:
                 queue = queue.append(segments.loc[newstart])
-                if verbose == True:
-                    print("Adding to Queue!", newstart)
+                #if verbose == True:
+                #    print("Adding to Queue!", newstart)
 
             # If the downstream segment is in the index and is another dam
             if newstart in segments.index and segments.loc[newstart, 'DamID'] > 0:
                 queue = queue.append(segments.loc[newstart])
-                if verbose == True:
-                    print("Adding to Queue!", newstart)
+                #if verbose == True:
+                #    print("Adding to Queue!", newstart)
 
         # delete the segment that was just finished from the queue
         queue = queue.drop(tempstart)
-        if verbose == True:
-            print("Removing From Queue:", tempstart)
+        #if verbose == True:
+        #    print("Removing From Queue:", tempstart)
 
     return segments
 
@@ -184,7 +196,8 @@ def agg_by_frag(segments):
     
     # Identify headwater fragments  -
     # Mark fragments that are headwaters
-    headlist = segments.loc[segments.UpHydroseq == 0, 'Frag'].unique()
+    #headlist = segments.loc[segments.UpHydroseq == 0, 'Frag'].unique()
+    headlist = segments.loc[segments.Headwater == 1, 'Frag'].unique()
     fragments['HeadFlag'] = np.zeros(len(fragments))
     fragments.loc[headlist, 'HeadFlag'] = 1
 
