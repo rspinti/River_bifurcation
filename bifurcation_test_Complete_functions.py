@@ -13,7 +13,7 @@ plt.style.use('classic')
 test = pd.read_csv("extracted_HUC1019.csv", index_col='Hydroseq',
                     usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
                            'Pathlength', 'LENGTHKM', 'StartFlag',
-                            'WKT', 'DamID'])
+                            'WKT', 'DamID', 'DamCount'])
 #"small1019.csv"
 # "extracted_HUC1019.csv"
 #test = pd.read_csv("small1019.csv", 
@@ -31,8 +31,8 @@ test['DamID'] = test['DamID'].fillna(0)
 #Making adding this step to the function so its not needed here
 #test['Frag'] = test['DamID']
 # make a column to indicate if a dam is present or not
-test['DamCount'] = np.zeros(len(test))
-test.loc[test.DamID>0, 'DamCount'] = 1
+#test['DamCount'] = np.zeros(len(test))
+#test.loc[test.DamID>0, 'DamCount'] = 1
 
 # Fix the hydroseq columns, so they are integers
 #test['UpHydroseq'] = test['UpHydroseq'].round(decimals=0)
@@ -57,7 +57,7 @@ importlib.reload(bfc)
 #%%
 t1 = datetime.datetime.now() 
 # STEP1:  Make Fragments
-segments=bfc.make_fragments(segments, exit_id=11, verbose=False, subwatershed=True)
+segments=bfc.make_fragments(segments, exit_id=52000, verbose=False, subwatershed=True)
 t2 = datetime.datetime.now()
 print("Make Fragments:", (t2-t1))
 
@@ -83,8 +83,12 @@ print("Aggregate by upstream:", (t5-t4))
 print("Total Time:", (t5-t1))
 
 # %%
-testing = segments.loc[segments.Frag == 0]
+#testing = segments.loc[segments.Frag == 0]
 print(segments.loc[segments.Frag == 0])  # check for any segments not covered
+
+# %%
+segments.plot(column='Frag', legend=True)
+
 
 # %%
 # Some plotting
