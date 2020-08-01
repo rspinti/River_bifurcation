@@ -1,6 +1,6 @@
 import numpy as np
 
-def make_fragments(segments, exit_id=999000, verbose=False):
+def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
     """Create stream fragments from stream segments based on dam locations.
 
     This function traverses through a stream network using NHD stream segment
@@ -33,10 +33,32 @@ def make_fragments(segments, exit_id=999000, verbose=False):
 
     # Add a column for Fragment #'s and initilze with the DamIDs
     segments['Frag'] = segments['DamID']
+    #segments['Frag'] = np.zeros(len(segments))
     #print(segments['Frag'])
 
+    #initialize queue with all segments with upstream ID of 0
     queue = segments.loc[segments.UpHydroseq == 0]
-    
+    print(len(queue))
+
+    #If the flag is on then also add segments who's upstream segment is not included
+    #or that are not any other segments downstream neighbor
+    if subwatershed: 
+        print("Including segments with upstream hydro seq not in segments list as headwaters")
+        for ii in segments.index: 
+            #print(ii)
+            upstream = segments.loc[ii, 'UpHydroseq']
+            #Check if the upstream neigbhor doesn't exist in the segments DF
+            if not upstream in segments.index and upstream != 0:
+                #print("adding segment",  ii, " upstream=", upstream, "queue length", len(queue))
+                queue = queue.append(segments.loc[ii])
+
+            #Check if there are no segments which drain to this one
+            if not ii in segments.DnHydroseq.values:
+                #print("adding segment",  ii, "queue length", len(queue))
+                queue = queue.append(segments.loc[ii])
+  
+    print(len(queue))
+
     # Initail number to use for fragments that are existing the  domain
     # Rather than hitting a dam. Exiting framents will start counting from
     # this number
@@ -95,15 +117,23 @@ def make_fragments(segments, exit_id=999000, verbose=False):
             newstart = segments.loc[temploc, 'DnHydroseq']
             #add to the count of dams
             #fragments.loc[ftemp, 'Ndam'] += segments.loc[temploc, 'DamCount']
-            #if newstart in segments.index:
+            
+            # If the downstream segment is in the index and it hasn't been processed yet
             if newstart in segments.index and segments.loc[newstart, 'Frag'] == 0:
+                queue = queue.append(segments.loc[newstart])
+                if verbose == True:
+                    print("Adding to Queue!", newstart)
+
+            # If the downstream segment is in the index and is another dam
+            if newstart in segments.index and segments.loc[newstart, 'DamID'] > 0:
                 queue = queue.append(segments.loc[newstart])
                 if verbose == True:
                     print("Adding to Queue!", newstart)
 
         # delete the segment that was just finished from the queue
         queue = queue.drop(tempstart)
-        print("Removing From Queue:", tempstart)
+        if verbose == True:
+            print("Removing From Queue:", tempstart)
 
     return segments
 

@@ -57,7 +57,7 @@ importlib.reload(bfc)
 #%%
 t1 = datetime.datetime.now() 
 # STEP1:  Make Fragments
-segments=bfc.make_fragments(segments, exit_id=11, verbose=True)
+segments=bfc.make_fragments(segments, exit_id=11, verbose=False, subwatershed=True)
 t2 = datetime.datetime.now()
 print("Make Fragments:", (t2-t1))
 
@@ -82,6 +82,9 @@ print("Map Upstream fragments:", (t4-t3))
 print("Aggregate by upstream:", (t5-t4))
 print("Total Time:", (t5-t1))
 
+# %%
+testing = segments.loc[segments.Frag == 0]
+print(segments.loc[segments.Frag == 0])  # check for any segments not covered
 
 # %%
 # Some plotting
@@ -91,8 +94,15 @@ print("Total Time:", (t5-t1))
 fig, ax = plt.subplots(1, 2)
 segments.plot(column='DamID', ax=ax[0], legend=True)
 segments.plot(column='Frag', ax=ax[1], legend=True)
+
+#testplot = segments.loc[segments.Frag == 0]
+#testplot.plot(column='DamID', ax=ax[1], legend=True)
+
+
 #segments.plot(column='step', ax=ax[1], legend=True)
 plt.show()
+
+#
 
 # %%
 # Doing some summaries to cross check calculations
