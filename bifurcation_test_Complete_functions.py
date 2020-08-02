@@ -101,10 +101,15 @@ fig, ax = plt.subplots(1, 1)
 #im.sett_clim(0,10)
 #plt.show()
 
-im=segments.plot(column='Frag', legend=True, cmap='viridis_r',
-              legend_kwds={'label': "Fragment #", 'orientation': "horizontal"})
-
-im.set_clim(0, 10)
+#segments.plot(column='Frag', legend=True, cmap='viridis_r',
+#              legend_kwds={'label': "Fragment #", 'orientation': "horizontal"},
+#              vmin=51030, vmax=52040)
+#segments.plot(column='Frag', legend=True, cmap='viridis_r',
+#              legend_kwds={'label': "Fragment #", 'orientation': "horizontal"},
+#              vmin=52000, vmax=52040)
+segments.plot(column='Frag', legend=True, cmap='viridis_r',
+              legend_kwds={'label': "Fragment #", 'orientation': "horizontal"},
+              vmin=3600,vmax=4400)
 
 # %%
 segments.plot(column='Frag', legend=True, cmap='viridis_r',
