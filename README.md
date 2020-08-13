@@ -199,3 +199,11 @@ We will filter out coastlines because we do not want to worry about what happens
 We also decided to keep zero storage values, so we can turn those on and off for comparison.
 
 We determined that we need to discuss what metrics and indices we want to include in our analysis. 
+
+## August 11, 2020
+
+
+### *NOTE:* 
+When an error occurs with the ftemp variable (line 95 in bifurcate.py), it could be multiple things. I have had the following issues:
+- Hydroseq is duplicated
+- Negative values

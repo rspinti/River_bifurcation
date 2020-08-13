@@ -1,13 +1,18 @@
 
 # %%
+import os
 import pandas as pd
 import numpy as np
 import geopandas as gp
 import matplotlib.pyplot as plt
-import bifurcate as bfc
+import matplotlib as mpl
 import extract as ex
 from shapely import wkt
 plt.style.use('classic')
+
+import sys
+sys.path.insert(0, '/Users/rachelspinti/Documents/River_bifurcation')
+import bifurcate as bfc
 
 from pathlib import Path
 gdrive = Path("/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/Rachel/Research/GIS/Layers") #where shapefiles/csv live 
@@ -15,7 +20,7 @@ gdrive = Path("/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Proj
 
 # %%
 # Choose the major river basin to Run
-# run_name = 'Red'  #type river basin name
+run_name = 'Red'  #type river basin name
 #run name options
 # ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes', 
 #  'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
@@ -23,28 +28,28 @@ gdrive = Path("/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Proj
 
 # %%
 # Read in data
-dams = ex.extract_dams(nabd)
+# dams = ex.extract_dams()
 # print(dams.head(3))
 
-function = ex.my_function()
+# function = ex.my_function()
 
-#If the specified basin csv does not exist, extract it
+# If the specified basin csv does not exist, extract it
 if os.path.isfile(run_name+'.csv'):  #does it exist?
     #Read specified basin 
-    nabd_nhd_join = pd.read_csv(run_name+'.csv', usecols=['Hydroseq', 'UpHydroseq', 
-                                            'DnHydroseq','Pathlength', 
-                                            'LENGTHKM', 'StartFlag',
-                                            'WKT', 'FTYPE','DamID'])
+    print('exists')
+    segments = pd.read_csv(run_name+'.csv', usecols=['Hydroseq', 'UpHydroseq',
+    'DnHydroseq','Pathlength', 'LENGTHKM', 'StartFlag', 'Coordinates','DamID', 'DamCount'])
 else:
-    ex.join_dams_flowlines(run_name)
-    nabd_nhd_join = pd.read_csv(run_name+'.csv', usecols=['Hydroseq', 'UpHydroseq', 
+    print('does not exist')
+    nabd_nhd = ex.join_dams_flowlines(run_name)
+    filtered_join = ex.filter_join(nabd_nhd, run_name)  #filter the joined data
+    segments = pd.read_csv(run_name+'.csv', usecols=['Hydroseq', 'UpHydroseq', 
                                             'DnHydroseq','Pathlength', 
                                             'LENGTHKM', 'StartFlag',
-                                            'WKT', 'FTYPE','DamID'])
-                                        
-#Filter joined data
-# somthing = ex.filter_join(nabd_nhd_join)
- # %%
+                                            'Coordinates','DamID', 'DamCount'])
+
+
+# %%
 ## NABD
 # nabd = gp.read_file(gdrive/"nabd_fish_barriers_2012.shp")  #read in NABD from Drive
 # nabd = nabd.drop_duplicates(subset='NIDID', keep="first")  #drop everything after first duplicate
@@ -65,7 +70,7 @@ else:
 #                 'South Atlantic' : [3]}
 # # print(major_basins)
 
-#If the specified basin csv does not exist, extract it
+# If the specified basin csv does not exist, extract it
 # if os.path.isfile(run_name+'.csv'):  #does it exist?
 #     #Read specified basin 
 #     nabd_nhd_join = pd.read_csv(run_name+'.csv', usecols=['Hydroseq', 'UpHydroseq', 
@@ -83,7 +88,7 @@ else:
 #     flowlines['REACHCODE'] = flowlines['REACHCODE'].apply(np.floor) #round down to integer
 #     flowlines[['UpHydroseq', 'DnHydroseq', 'Hydroseq']] = flowlines[['UpHydroseq', 'DnHydroseq', 'Hydroseq']].round(decimals=0)
 #         #round the hydroseq values because of bug
-#     flowlines['FTYPE'] = flowlines[flowlines['FTYPE']!= "Coastline"]
+#     flowlines = flowlines[flowlines['FTYPE']!= "Coastline"]
     
 
 #     #Based on the run name, a different basin will be selected
@@ -184,37 +189,44 @@ fragments=bfc.agg_by_frag_up(fragments, UpDict)
 
 # %%
 # Some plotting
-#print(segments.columns)
-#segments['Frag'] = segments['Frag'].fillna(0)
+print(segments.columns)
+segments['Frag'] = segments['Frag'].fillna(0)
 
-fig, ax = plt.subplots(1, 2)
-segments.plot(column='DamID', ax=ax[0], legend=True)
-segments.plot(column='Frag', ax=ax[1], legend=True)
-#segments.plot(column='step', ax=ax[1], legend=True)
-plt.show()
+segments.Coordinates = segments.Coordinates.astype(str)
+segments['Coordinates'] = segments['Coordinates'].apply(wkt.loads)
+segments_gdf = gp.GeoDataFrame(segments, geometry='Coordinates')
 
-# %%
-# Doing some summaries to cross check calculations
-#print(fragments)
-print(segments.loc[segments.Frag == 0]) #check for any segments not covered
-temp = segments.pivot_table('LENGTHKM', index='Frag', aggfunc=sum)
-print(temp)
-print(sum(temp['LENGTHKM']))
-print(sum(segments.LENGTHKM))
-# alternate approach to pivot tabel
-# segments.groupby('Frag')[['LENGTHKM']].sum()
+# fig, ax = plt.subplots(1, 2)
+# segments.plot(column='DamID', ax=ax[0], legend=True)
+# segments.plot(column='Frag', ax=ax[1], legend=True)
+# #segments.plot(column='step', ax=ax[1], legend=True)
+# plt.show()
 
+segments.plot(column='Frag', legend=True, cmap='viridis_r',
+              legend_kwds={'label': "Fragment #", 'orientation': "horizontal"})
 
-# %%
-## Rachel testing the plotting to see what happens with Fragments
-## Was testing HUC4 1019
-fig, ax = plt.subplots(1, 2)
-x = segments[segments['Frag'] <12000]  #this filter value might change 
-                                  # depending on the range of vlaues for Frags
-x.plot(column='Frag', ax=ax[0], legend=True)
-y = segments[segments['Frag'] >12000]  #this filter value might change 
-y.plot(column='Frag', ax=ax[1], legend=True)
-plt.show()
+# # %%
+# # Doing some summaries to cross check calculations
+# #print(fragments)
+# print(segments.loc[segments.Frag == 0]) #check for any segments not covered
+# temp = segments.pivot_table('LENGTHKM', index='Frag', aggfunc=sum)
+# print(temp)
+# print(sum(temp['LENGTHKM']))
+# print(sum(segments.LENGTHKM))
+# # alternate approach to pivot tabel
+# # segments.groupby('Frag')[['LENGTHKM']].sum()
 
 
-# %%
+# # %%
+# ## Rachel testing the plotting to see what happens with Fragments
+# ## Was testing HUC4 1019
+# fig, ax = plt.subplots(1, 2)
+# x = segments[segments['Frag'] <12000]  #this filter value might change 
+#                                   # depending on the range of vlaues for Frags
+# x.plot(column='Frag', ax=ax[0], legend=True)
+# y = segments[segments['Frag'] >12000]  #this filter value might change 
+# y.plot(column='Frag', ax=ax[1], legend=True)
+# plt.show()
+
+
+# # %%
