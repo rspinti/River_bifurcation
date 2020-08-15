@@ -201,9 +201,11 @@ We also decided to keep zero storage values, so we can turn those on and off for
 We determined that we need to discuss what metrics and indices we want to include in our analysis. 
 
 ## August 11, 2020
+We had a discussion about metrics for the study. We decided we would for sure use RRI and RFI to show the degree of connectivity. RFI is conceptually equivalent to RCI, so we will only use RFI. We have most of the variables needed to calculate these two metrics. Jun is checking what discharge value we want to use from NHD because there are multiple.
 
+The GRanD database will be used to compare NABd to. 
 
 ### *NOTE:* 
 When an error occurs with the ftemp variable (line 95 in bifurcate.py), it could be multiple things. I have had the following issues:
 - Hydroseq is duplicated
-- Negative values
+- Negative values (from lat/long not being in the right column)

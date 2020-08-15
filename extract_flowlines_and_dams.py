@@ -21,7 +21,7 @@ gdrive = Path("/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Proj
 
 # %%
 # Choose the major river basin to RUN
-run_name = 'North Atlantic'  #type river basin name
+run_name = 'Rio Grande'  #type river basin name
 #run name options
 # ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes', 
 #  'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
@@ -32,7 +32,7 @@ run_name = 'North Atlantic'  #type river basin name
 nabd = gp.read_file(gdrive/"nabd_fish_barriers_2012.shp")  #read in NABD from Drive
 nabd = nabd.drop_duplicates(subset='NIDID', keep="first")  #drop everything after first duplicate
 nabd["DamID"] = range(len(nabd.COMID))  #add DamID 
-print(nabd.DamID.unique)  #check the DamIDs
+# print(nabd.DamID.unique)  #check the DamIDs
 
 ## NHD
 #Dictionary with river basin names and associated HUC 2s
@@ -128,54 +128,54 @@ else:
         south_atlantic = flowlines.loc[(flowlines['REACHCODE'] == major_basins[run_name][0])]
         nabd_nhd_join = nabd.merge(south_atlantic, how= 'right', on='COMID') # Merge NABD and NHD
     #Creates new csv to run
-    # nabd_nhd_join.to_csv(run_name+'.csv')  
-    # print('Finished writing nabd_nhd_join to '+run_name+'.csv....', nabd_nhd_join.head(3))
+    nabd_nhd_join.to_csv(run_name+'2.csv')  
+    print('Finished writing nabd_nhd_join to '+run_name+'.csv....', nabd_nhd_join.head(3))
 
 
 # %%
-# Add stuff for bifurcation analysis
-## add a column to keep track of steps
-nabd_nhd_join.insert(5, "step", np.zeros(len(nabd_nhd_join)), True)
+# # Add stuff for bifurcation analysis
+# ## add a column to keep track of steps
+# nabd_nhd_join.insert(5, "step", np.zeros(len(nabd_nhd_join)), True)
 
-# Copying over the dam IDs into a new fragment column
-# nabd_nhd_join['Frag'] = nabd_nhd_join['DamID']
+# # Copying over the dam IDs into a new fragment column
+# # nabd_nhd_join['Frag'] = nabd_nhd_join['DamID']
 
 
-## Filtering the Hydroseq, storage, and dam count
-# Group by Hydroseq and sum storage
-storage_sum = nabd_nhd_join.groupby(['Hydroseq'])['Norm_stor'].sum().reset_index()
+# ## Filtering the Hydroseq, storage, and dam count
+# # Group by Hydroseq and sum storage
+# storage_sum = nabd_nhd_join.groupby(['Hydroseq'])['Norm_stor'].sum().reset_index()
 
-# Count # of duplicate dams
-nabd_nhd_join['DamCount'] = np.zeros(len(nabd_nhd_join))  #add count column
-dam_count = nabd_nhd_join.pivot_table(index=['Hydroseq'], aggfunc={'DamCount':'size'}).reset_index() 
-    #Aggregate by the size of each Hydroseq
+# # Count # of duplicate dams
+# nabd_nhd_join['DamCount'] = np.zeros(len(nabd_nhd_join))  #add count column
+# dam_count = nabd_nhd_join.pivot_table(index=['Hydroseq'], aggfunc={'DamCount':'size'}).reset_index() 
+#     #Aggregate by the size of each Hydroseq
 
-# Merge count and storage dataframes
-count_sum_merge = storage_sum.merge(dam_count, how= 'left', on='Hydroseq')  #merge count and sum 
+# # Merge count and storage dataframes
+# count_sum_merge = storage_sum.merge(dam_count, how= 'left', on='Hydroseq')  #merge count and sum 
 
-# Filter nabd_nhd_join for merge
-nabd_nhd_filtered = nabd_nhd_join.drop_duplicates(subset='Hydroseq', keep="last")  #drop everything but last duplicate
-nabd_nhd_filtered = nabd_nhd_filtered.drop(columns=['Norm_stor'])  #drop Norm_stor, so new one is added
-# nabd_nhd_filtered = nabd_nhd_filtered.drop(columns=['Norm_stor', 'DamCount'])  #if dam count exists, use this
+# # Filter nabd_nhd_join for merge
+# nabd_nhd_filtered = nabd_nhd_join.drop_duplicates(subset='Hydroseq', keep="last")  #drop everything but last duplicate
+# nabd_nhd_filtered = nabd_nhd_filtered.drop(columns=['Norm_stor'])  #drop Norm_stor, so new one is added
+# # nabd_nhd_filtered = nabd_nhd_filtered.drop(columns=['Norm_stor', 'DamCount'])  #if dam count exists, use this
 
-# Merge the dataframes so the storage and DamIDs are how we want
-nabd_nhd_join = nabd_nhd_filtered.merge(count_sum_merge, how= 'left', on='Hydroseq') # Merge NABD and NHD
+# # Merge the dataframes so the storage and DamIDs are how we want
+# nabd_nhd_join = nabd_nhd_filtered.merge(count_sum_merge, how= 'left', on='Hydroseq') # Merge NABD and NHD
 
-# Fill in the NA's for the dam column with 0s
-nabd_nhd_join['DamID'] = nabd_nhd_join['DamID'].fillna(0)
+# # Fill in the NA's for the dam column with 0s
+# nabd_nhd_join['DamID'] = nabd_nhd_join['DamID'].fillna(0)
 
-# Make a column to indicate if a dam is present or not
-nabd_nhd_join.loc[nabd_nhd_join.DamID==0, 'DamCount'] = 0 #if the DamID is 0, make dam count =0
+# # Make a column to indicate if a dam is present or not
+# nabd_nhd_join.loc[nabd_nhd_join.DamID==0, 'DamCount'] = 0 #if the DamID is 0, make dam count =0
 
-# Set index to Hydroseq
-nabd_nhd_join = nabd_nhd_join.set_index('Hydroseq')
+# # Set index to Hydroseq
+# nabd_nhd_join = nabd_nhd_join.set_index('Hydroseq')
 
-# %%
-# Creates new csv to run in bifurcation_test_Complete.py
-# nabd_nhd_join.to_csv(run_name+'.csv')  
-nabd_nhd_join.to_csv('extracted_HUC0109.csv') 
-# nabd_nhd_join.to_csv(gdrive/'NHDPlusNationalData/sample_nabd_nhd.csv') 
-print('Finished writing nabd_nhd_join to csv..........', nabd_nhd_join.head(3))
+# # %%
+# # Creates new csv to run in bifurcation_test_Complete.py
+# # nabd_nhd_join.to_csv(run_name+'.csv')  
+# nabd_nhd_join.to_csv('extracted_HUC0109.csv') 
+# # nabd_nhd_join.to_csv(gdrive/'NHDPlusNationalData/sample_nabd_nhd.csv') 
+# print('Finished writing nabd_nhd_join to csv..........', nabd_nhd_join.head(3))
 
 # %%
 

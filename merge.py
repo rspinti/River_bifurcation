@@ -17,12 +17,17 @@ gdrive = Path("/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Proj
 # %%
 # Read in data
 ## NHD
-# flowlines_test = pd.read_csv(gdrive/"NHDPlusNationalData/NHDFlowlines.csv")  #all NHD Flowlines
-flowlines_test = pd.read_csv(gdrive/"NHDPlusNationalData/Test1019.csv")        #HUC 1019 dataset
+flowlines_test = pd.read_csv(gdrive/"NHDPlusNationalData/NHDFlowlines.csv", index_col='Hydroseq',
+                   usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
+                            'REACHCODE', 'Pathlength', 'LENGTHKM', 
+                            'StartFlag', 'COMID', 'WKT'])  #all NHD Flowlines
+# flowlines_test = pd.read_csv(gdrive/"NHDPlusNationalData/Test1019.csv")        #HUC 1019 dataset
 # flowlines_test = gp.read_file(gdrive/"HUC_test/Test1029.shp")                #this is actually HUC 1019
 
 # flowlines_test = pd.read_csv(gdrive/"NHDPlusNationalData/small1019.csv")     #subset of the 1019
 # flowlines_test = pd.read_csv(gdrive/"NHDPlusNationalData/small1019_test2.csv") #another subset of 1019
+
+
 
 ## NABD
 nabd = gp.read_file(gdrive/"nabd_fish_barriers_2012.shp")  #read in NABD from Drive
