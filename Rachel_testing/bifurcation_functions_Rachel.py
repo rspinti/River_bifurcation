@@ -6,7 +6,7 @@ import pandas as pd
 import geopandas as gp
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-import bifurcate as bfc
+import bifurcate_upreaches as bfup
 from shapely import wkt
 plt.style.use('classic')
 
@@ -20,35 +20,20 @@ gdrive = Path("/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Proj
 
 # Read in data
 ## NABD
-nabd_dams = gp.read_file(gdrive/"nabd_fish_barriers_2012.shp", 
+nabd = gp.read_file(gdrive/"nabd_fish_barriers_2012.shp", 
                         usecols=['COMID', 'NIDID', 'Norm_stor', 'Max_stor', 
                                  'Year_compl', 'Purposes', 'geometry'])  #read in NABD from Drive
-nabd_dams = nabd_dams.drop_duplicates(subset='NIDID', keep="first")  #drop everything after first duplicate
-nabd_dams["DamID"] = range(len(nabd.COMID))  #add DamID 
-nabd_dams = pd.DataFrame(nabd_dams)
-nabd_dams['Grand_flag'] = np.zeros(len(nabd))  #add flag column
+nabd = nabd.drop_duplicates(subset='NIDID', keep="first")  #drop everything after first duplicate
+nabd["DamID"] = range(len(nabd.COMID))  #add DamID 
 # print(nabd.DamID.unique)  #check the DamIDs
-
-## GRanD
-grand = pd.read_csv(gdrive/"Reservoir_Attributes.csv", 
-                        usecols=['GRAND_ID', 'NABD_ID'])  #read in NABD from Drive
-#Filter out dams without NABD IDs
-grand['NABD_ID'] = grand['NABD_ID'].fillna(0)
-# print(grand.GRAND_ID.unique())
-grand = grand[grand['NABD_ID']!=0]
-
-#Merge NABD and GRanD
-nabd = pd.merge(nabd_dams, grand, left_on = 'NIDID', right_on = 'NABD_ID', how = 'left')
-nabd['GRAND_ID'] = nabd['GRAND_ID'].fillna(0)
-nabd.loc[nabd.GRAND_ID != 0, 'Grand_flag'] = 1 #if a GRanD ID exists, make flag =1 
-
+    
 ## NHD
 flowlines = pd.read_csv(gdrive/"NHDPlusNationalData/NHDFlowlines.csv",
                             usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
                                      'REACHCODE','LENGTHKM', 'StartFlag', 
                                      'FTYPE', 'COMID', 'WKT', 'QE_MA', 'QC_MA'])  #all NHD Flowlines
 #Filter the flowlines to select by HUC 2
-flowlines['REACHCODE'] = flowlines['REACHCODE']/(10**12) #convert Reachcode to HUC 2 format
+flowlines['REACHCODE'] = flowlines['REACHCODE']/(10**10) #convert Reachcode to HUC 2 format
 flowlines['REACHCODE'] = flowlines['REACHCODE'].apply(np.floor) #round down to integer
 #round the hydroseq values because of bug
 flowlines[['UpHydroseq', 'DnHydroseq', 'Hydroseq']] = flowlines[['UpHydroseq', 
@@ -57,7 +42,7 @@ flowlines[['UpHydroseq', 'DnHydroseq', 'Hydroseq']] = flowlines[['UpHydroseq',
 flowlines = flowlines[flowlines['FTYPE']!= 'Coastline']  #filter out coastlines
 # %%
 # Choose the major river basin to Run
-run_name = 'Mississippi'  #type river basin name
+run_name = 'Red'  #type river basin name
 #run name options
 # ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes', 
 #  'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
@@ -69,47 +54,56 @@ run_name = 'Mississippi'  #type river basin name
 if os.path.isfile(run_name+'.csv'):  #does it exist?
     #Read specified basin 
     print('Exists')
-    segments = pd.read_csv(run_name+'.csv', usecols=['Hydroseq', 'UpHydroseq',
-    'DnHydroseq', 'LENGTHKM', 'StartFlag', 'Coordinates','DamID', 'DamCount',
-    'Norm_stor', 'QE_MA', 'QC_MA'])
+    segments = pd.read_csv(run_name+'test.csv', usecols=['Hydroseq', 'UpHydroseq',
+    'DnHydroseq', 'LENGTHKM', 'StartFlag', 'Coordinates','DamID', 'DamCount'])
 else:
     print('Does not exist')
     nabd_nhd = ex.join_dams_flowlines(flowlines, run_name, nabd)
-    segments = pd.read_csv(run_name+'.csv', usecols=['Hydroseq', 'UpHydroseq', 
+    segments = pd.read_csv(run_name+'test.csv', usecols=['Hydroseq', 'UpHydroseq', 
                                             'DnHydroseq', 
                                             'LENGTHKM', 'StartFlag',
-                                            'Coordinates','DamID', 'DamCount', 
-                                            'Norm_stor', 'QE_MA', 'QC_MA'])
+                                            'Coordinates','DamID', 'DamCount'])
 
 
 #%%
 from time import time
 t1 = time()
 # STEP1:  Make Fragments
-segments=bfc.make_fragments(segments, exit_id=99900000)
+segments=bfup.make_fragments(segments, exit_id=99900000)
 t2 = time()
 print("Make Fragments:", (t2-t1))
 
 # STEP 2: Making a fragment data frame and aggregated by fragment
-fragments = bfc.agg_by_frag(segments)
+fragments = bfup.agg_by_frag(segments)
 t3 = time()
 print("Aggregate by fragments:", (t3-t2))
 
 # STEP 3: Map Upstream Fragments 
-UpDict = bfc.map_up_frag(fragments)
+UpDict = bfup.map_up_frag(fragments)
 t4 = time()
 print("Map Upstream fragments:", (t4-t3))
 
 #STEP 4: Aggregate by upstream area
-fragments=bfc.agg_by_frag_up(fragments, UpDict)
+fragments=bfup.agg_by_frag_up(fragments, UpDict)
 t5 = time()
+
+# STEP 5: Map Upstream Segments
+UpDict_reaches = bfup.map_up_seg(segments)
+t6 = time()
+print("Map Upstream fragments:", (t4-t3))
+
+#STEP 6: Aggregate by upstream segment
+segments=bfup.agg_by_seg_up(segments, UpDict_reaches)
+t7 = time()
 
 print("---- TIMING SUMMARY -----")
 print("Make Fragments:", (t2-t1))
 print("Aggregate by fragments:", (t3-t2))
 print("Map Upstream fragments:", (t4-t3))
 print("Aggregate by upstream:", (t5-t4))
-print("Total Time:", (t5-t1))
+print("Map Upstream segments:", (t6-t5))
+print("Aggregate by upstream segment:", (t7-t6))
+print("Total Time:", (t7-t1))
 
 # %%
 # Preparing for plotting

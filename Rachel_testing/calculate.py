@@ -14,16 +14,41 @@ import pandas as pd
 
 def my_lil_function():
     print('Hi your lil function worked')
+
+
+def calc_rfi(fragments, tot_vol):
+    ## RFI
+    # - number of fragments
+    # - total river volume of fragment
+    # - total river volume of entire network
+    # RFI = 100 - (sum(vi^2/V^2)*100)
+
+    #How many fragments?
+    frag_num = len(fragments)
+    print(frag_num)
+
+    #Total volume of river network
+    tot_vol2 = tot_vol**2
     
-class MyClass:
-    def __init__(self, variable):
-        test = variable
-        print(test)
+    #Sum the fractions
+    fraction_list = []
+    for i in range(len(fragments)):
+        frag_vol = (fragments['QE_MA'][i])**2
+        fraction = frag_vol/tot_vol2
+        fraction_list.append(fraction)
+    print(len(fraction_list))
 
-    def function(self, test):
-        print("This is a message inside the class.")
-        print(test+'2')
+    #Finish the calculation
+    rfi = 100 - (sum(fraction_list)*100)
+    print(rfi)
 
 
-def calc_rfi():
-    print()
+    return rfi
+
+def calc_rri(segments_update, tot_vol):
+    ## DOR
+    # DOR = (sum(storage of dams upstream)/total annual discharge) *100
+    
+    for i in range(len(segments_update.Hydroseq)):
+        fragments.loc[i, 'NDamUp'] = fragments.loc[UpDict[i], 'DamCount'].sum()
+    dor = (sum/tot_vol)*100
