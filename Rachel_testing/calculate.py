@@ -48,7 +48,57 @@ def calc_rfi(fragments, tot_vol):
 def calc_rri(segments_update, tot_vol):
     ## DOR
     # DOR = (sum(storage of dams upstream)/total annual discharge) *100
+    segments_update = segments_update.set_index('Hydroseq')
+    Up_flowlines = dict.fromkeys(segments_update.index)
+    # print(Up_flowlines.keys())
     
-    for i in range(len(segments_update.Hydroseq)):
-        fragments.loc[i, 'NDamUp'] = fragments.loc[UpDict[i], 'DamCount'].sum()
-    dor = (sum/tot_vol)*100
+    # *Decide if the current reach is upstream of itself and should be counted in dictionary*
+    # #Loop through and initialize every segment list with itself
+    # for ind in range(len(segments_update)):
+    #     ftemp = segments_update.index[ind]
+    #     Up_flowlines[ftemp] = [ftemp]
+    #     #print(ftemp)
+
+    #Make a list of all the headwater segments to start from
+    queue_seg = segments_update.loc[segments_update.StartFlag == 1]
+    # print('queue index', queue_seg.index)
+    # print('queue', queue_seg)
+
+    # Work downstream adding to the segment lists
+    while len(queue_seg) > 0:
+        DnSeg = queue_seg.DnHydroseq.iloc[0]
+        ftemp = queue_seg.index[0]
+        #print("Segment:", ftemp, "Downstream:", DnSeg)
+
+        # if the downstream segment exists append the current segment list to it
+        # and add the downstream segment to the queue
+        # if not np.isnan(DnSeg):
+        if not DnSeg == 0:
+            print("HERE")
+            Up_flowlines[DnSeg].extend(Up_flowlines[ftemp])
+            queue_seg.append(segments_update.loc[DnSeg])
+
+        #remove the current segment from the queue
+        queue_seg = queue_seg.drop(queue_seg.index[0])
+
+    # Remove the duplicate values in each list
+    for key in Up_flowlines:
+        #print(key)
+        Up_flowlines[key] = list(dict.fromkeys(Up_flowlines[key]))
+
+    print(Up_flowlines)
+
+    segments_update['NSegUp'] = np.zeros(len(segments_update))
+    segments_update['FlowUp'] = np.zeros(len(segments_update))
+    segments_update['Norm_storUp'] = np.zeros(len(segments_update))
+
+    for key in Up_flowlines:
+        #print(key)
+        segments_update.loc[key, 'NSegUp'] = len(Up_flowlines[key])
+        segments_update.loc[key, 'FlowUp'] = segments_update.loc[Up_flowlines[key],
+                                                     'QE_MA'].sum()
+        segments_update.loc[key, 'NDamUp'] = segments_update.loc[Up_flowlines[key],
+                                                       'Norm_stor'].sum()
+    
+    # return segments_update
+    # dor = (sum/tot_vol)*100
