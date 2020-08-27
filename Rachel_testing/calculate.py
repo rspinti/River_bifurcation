@@ -12,9 +12,6 @@ Purpose: Calculate RFI and RRI for each major river basin
 import numpy as np
 import pandas as pd
 
-def my_lil_function():
-    print('Hi your lil function worked')
-
 
 def calc_rfi(fragments, tot_vol):
     ## RFI
@@ -33,7 +30,7 @@ def calc_rfi(fragments, tot_vol):
     #Sum the fractions
     fraction_list = []
     for i in range(len(fragments)):
-        frag_vol = (fragments['QE_MA'][i])**2
+        frag_vol = (fragments['QC_MA'][i])**2
         fraction = frag_vol/tot_vol2
         fraction_list.append(fraction)
     print(len(fraction_list))
@@ -96,7 +93,7 @@ def calc_rri(segments_update, tot_vol):
         #print(key)
         segments_update.loc[key, 'NSegUp'] = len(Up_flowlines[key])
         segments_update.loc[key, 'FlowUp'] = segments_update.loc[Up_flowlines[key],
-                                                     'QE_MA'].sum()
+                                                     'QC_MA'].sum()
         segments_update.loc[key, 'NDamUp'] = segments_update.loc[Up_flowlines[key],
                                                        'Norm_stor'].sum()
     

@@ -4,8 +4,8 @@ import os
 import numpy as np
 import pandas as pd
 import geopandas as gp
-import matplotlib.pyplot as plt
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 import bifurcate as bfc
 from shapely import wkt
 plt.style.use('classic')
@@ -24,9 +24,9 @@ nabd_dams = gp.read_file(gdrive/"nabd_fish_barriers_2012.shp",
                         usecols=['COMID', 'NIDID', 'Norm_stor', 'Max_stor', 
                                  'Year_compl', 'Purposes', 'geometry'])  #read in NABD from Drive
 nabd_dams = nabd_dams.drop_duplicates(subset='NIDID', keep="first")  #drop everything after first duplicate
-nabd_dams["DamID"] = range(len(nabd.COMID))  #add DamID 
+nabd_dams["DamID"] = range(len(nabd_dams.COMID))  #add DamID 
 nabd_dams = pd.DataFrame(nabd_dams)
-nabd_dams['Grand_flag'] = np.zeros(len(nabd))  #add flag column
+nabd_dams['Grand_flag'] = np.zeros(len(nabd_dams))  #add flag column
 # print(nabd.DamID.unique)  #check the DamIDs
 
 ## GRanD
@@ -57,7 +57,7 @@ flowlines[['UpHydroseq', 'DnHydroseq', 'Hydroseq']] = flowlines[['UpHydroseq',
 flowlines = flowlines[flowlines['FTYPE']!= 'Coastline']  #filter out coastlines
 # %%
 # Choose the major river basin to Run
-run_name = 'Mississippi'  #type river basin name
+run_name = 'South Atlantic'  #type river basin name
 #run name options
 # ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes', 
 #  'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']

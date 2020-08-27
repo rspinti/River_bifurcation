@@ -203,9 +203,16 @@ We determined that we need to discuss what metrics and indices we want to includ
 ## August 11, 2020
 We had a discussion about metrics for the study. We decided we would for sure use RRI and RFI to show the degree of connectivity. RFI is conceptually equivalent to RCI, so we will only use RFI. We have most of the variables needed to calculate these two metrics. Jun is checking what discharge value we want to use from NHD because there are multiple.
 
-The GRanD database will be used to compare NABd to. 
+The GRanD database will be used to compare NABD to. 
 
 ### *NOTE:* 
 When an error occurs with the ftemp variable (line 95 in bifurcate.py), it could be multiple things. I have had the following issues:
 - Hydroseq is duplicated
 - Negative values (from lat/long not being in the right column)
+
+## August 25, 2020
+The bifurcate code was tested on all the basins, but got stuck in the Mississippi, which is the largest basin by far. Laura is going to test and debug the code with this basin.
+
+GRanD was joined to NABD, but there were some issues. Not all of the GRanD dams listed had a corresponding NABD ID that we could join to. There were 27 dams in this category. We decided to *ignore* these dams because their storage amgnitude was fairly small and there were so few spread across 8 states.
+
+Jun determined that QE_MA is the flow after human use and QC_MA is the 'natural' or undisturbed flow. We will use QC_MA in our RRI and RFI calculations.
