@@ -1,4 +1,5 @@
 # %%
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import geopandas as gp
@@ -7,22 +8,31 @@ import matplotlib as mpl
 import bifurcate as bfc
 import datetime
 from shapely import wkt
+from pathlib import Path
 plt.style.use('classic')
 
 # %%
 # Read in the csv and set Hydroseq as the index
-test = pd.read_csv("extracted_HUC1019.csv", index_col='Hydroseq',
-                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
-                           'Pathlength', 'LENGTHKM', 'StartFlag',
-                            'WKT', 'DamID', 'DamCount'])
+#test = pd.read_csv("extracted_HUC1019.csv", index_col='Hydroseq',
+#                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
+#                           'Pathlength', 'LENGTHKM', 'StartFlag',
+#                            'WKT', 'DamID', 'DamCount'])
 #"small1019.csv"
 # "extracted_HUC1019.csv"
-#test = pd.read_csv("small1019.csv", 
-#                   usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
-#                            'Pathlength', 'LENGTHKM', 'StartFlag',
-#                            'WKT', 'DamID'])
+test = pd.read_csv("small1019.csv", index_col='Hydroseq',
+                   usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
+                            'Pathlength', 'LENGTHKM', 'StartFlag',
+                            'WKT', 'DamID',  'QC_MA', 'Norm_stor'])
 # test_i=test.set_index('Hydroseq') #alternate way to set the indes
 # after the fact
+
+# Test for the Mississippi
+#gdrive = Path("/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/Rachel/Research/GIS/Layers")  # where shapefiles/csv live 
+#test = pd.read_csv(run_name+'.csv', usecols=['Hydroseq', 'UpHydroseq',
+#                                                 'DnHydroseq',
+#                                                 'LENGTHKM', 'StartFlag',
+#                                                 'Coordinates', 'DamID', 'DamCount',
+#                                                 'Norm_stor', 'QE_MA', 'QC_MA'])
 
 # add a column to keep track of steps
 test.insert(5, "step", np.zeros(len(test)), True)
@@ -31,9 +41,10 @@ test['DamID'] = test['DamID'].fillna(0)
 # Copying over the dam IDs into a new fragment column
 #Making adding this step to the function so its not needed here
 #test['Frag'] = test['DamID']
-# make a column to indicate if a dam is present or not
-#test['DamCount'] = np.zeros(len(test))
-#test.loc[test.DamID>0, 'DamCount'] = 1
+# make a column to indicate if a dam is present or not 
+##!!ONLY uncomment this if you are running small1019.csv. The others already have this column
+test['DamCount'] = np.zeros(len(test))
+test.loc[test.DamID>0, 'DamCount'] = 1
 
 # Fix the hydroseq columns, so they are integers
 #test['UpHydroseq'] = test['UpHydroseq'].round(decimals=0)
@@ -83,12 +94,17 @@ print("Map Upstream fragments:", (t4-t3))
 print("Aggregate by upstream:", (t5-t4))
 print("Total Time:", (t5-t1))
 
+# %% 
+# Caculate the degree of regulation 
+# For every segement = total upstream storage/annual streamflow volume 
+# 
+
 # %%
 #testing = segments.loc[segments.Frag == 0]
 print(segments.loc[segments.Frag == 0])  # check for any segments not covered
 
 # %%
-fig, ax = plt.subplots(1, 1)
+#fig, ax = plt.subplots(1, 1)
 #gradient = np.linspace(2000, 4000, 256)
 #divider = make_axes_locatable(ax)
 #cax = divider.append_axes("right", size="5%", pad=0.1)
@@ -109,7 +125,10 @@ fig, ax = plt.subplots(1, 1)
 #              vmin=52000, vmax=52040)
 segments.plot(column='Frag', legend=True, cmap='viridis_r',
               legend_kwds={'label': "Fragment #", 'orientation': "horizontal"},
-              vmin=3600,vmax=4400)
+              vmin=51000,vmax=51005)
+
+segments.plot(column='Frag_Index', legend=True, cmap='viridis_r',
+              legend_kwds={'label': "Fragment Index", 'orientation': "horizontal"})
 
 # %%
 segments.plot(column='Frag', legend=True, cmap='viridis_r',

@@ -30,10 +30,9 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
     Returns:
         segments (pandas.DataFrame): An updated dataframe with a fragments column.
     """
-
+    
     # Add a column for Fragment #'s and initilze with the DamIDs
     segments['Frag'] = segments['DamID']
-    #segments['Frag'] = np.zeros(len(segments))
     #print(segments['Frag'])
 
 
@@ -113,7 +112,6 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
             else:
                 #if verbose == True:
                 #    print("Step", step, "Ending", temploc)
-                
                 ftemp = exit_id+1  # New Fragment ID to be assigned
                 exit_id = exit_id+1
                 temploc = 0
@@ -122,7 +120,7 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
 
         # assign the DamID fragment number to all of the segments
         segments.loc[templist, 'Frag'] = ftemp
-
+        
         # If it wasn't a terminal fragment
         # add the downstream segment to the end of the queue
         if temploc > 0:
@@ -147,8 +145,11 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
         #if verbose == True:
         #    print("Removing From Queue:", tempstart)
 
-    return segments
+    # Add a column with the fragment indexes
+    segments['Frag_Index'] = segments.Frag.rank(method='dense')
 
+    return segments
+  
 def agg_by_frag(segments): 
     """Make a fragment data frame and aggregate by fragment.
 
@@ -291,4 +292,37 @@ def agg_by_frag_up(fragments, UpDict):
         fragments.loc[key, 'NDamUp'] = fragments.loc[UpDict[key],
                                                        'DamCount'].sum()
     
+    return fragments
+
+
+def degree_of_regulation(fragments, segments):
+    """Calculates the degree of regulation 
+
+    Using the upstream dictionary and the fragment summary database created by
+    map_up_frag() and agg_by_frag() respectively. This function appends columns
+    to the fragments database with values aggregated by upstream area. 
+
+    Parameters:
+        fragments (pandas.DataFrame): 
+             Fragments data frame created by the agg_by_fragg function
+        
+        UpDict (dict): 
+            Dictionary of upstream fragments created by map_up_frag function.
+    
+    Returns:
+        fragments (pandas.DataFrame): appended fragments dataframe.
+    """
+
+    fragments['NFragUp'] = np.zeros(len(fragments))
+    fragments['LengthUp'] = np.zeros(len(fragments))
+    fragments['NDamUp'] = np.zeros(len(fragments))
+
+    for key in UpDict:
+        #print(key)
+        fragments.loc[key, 'NFragUp'] = len(UpDict[key])
+        fragments.loc[key, 'LengthUp'] = fragments.loc[UpDict[key],
+                                                       'LENGTHKM'].sum()
+        fragments.loc[key, 'NDamUp'] = fragments.loc[UpDict[key],
+                                                     'DamCount'].sum()
+
     return fragments
