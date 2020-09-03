@@ -177,7 +177,10 @@ def agg_by_frag(segments):
     # Fill in fragment information
     # Total fragment length calculated using a pivot table from segment lengths
     #fragments0 = segments.pivot_table('LENGTHKM', index='Frag', aggfunc=sum)
-    fragments0 = segments.pivot_table(values=['LENGTHKM', 'DamCount'], index='Frag', aggfunc=sum)
+    fragments0 = segments.pivot_table(values=['LENGTHKM', 'DamCount', 'Norm_stor'], index='Frag', aggfunc=sum)
+
+    # Add in the fragment index
+    fragments0 = fragments0.join(segments.pivot_table(values=['Frag_Index'], index='Frag', aggfunc=min))
     
     # Determining downstream segment ID --
     # Join in the downstream segment for the segments that that contains the dam
@@ -186,6 +189,10 @@ def agg_by_frag(segments):
     # included in the join
     frgDN = segments.pivot_table('DnHydroseq', index='DamID', aggfunc=sum)
     fragments0 = fragments0.join(frgDN)
+
+    #Determine the flow for the segment with the dam
+    frgQ = segments.pivot_table('QC_MA', index='DamID', aggfunc=sum)
+    fragments0 = fragments0.join(frgQ)
     
     # Get the downstream fragment ID -
     # Use the downstream segment for each fragment to get its
@@ -283,6 +290,7 @@ def agg_by_frag_up(fragments, UpDict):
     fragments['NFragUp'] = np.zeros(len(fragments))
     fragments['LengthUp'] = np.zeros(len(fragments))
     fragments['NDamUp'] = np.zeros(len(fragments))
+    fragments['StorUp'] = np.zeros(len(fragments))
 
     for key in UpDict:
         #print(key)
@@ -291,38 +299,8 @@ def agg_by_frag_up(fragments, UpDict):
                                                      'LENGTHKM'].sum()
         fragments.loc[key, 'NDamUp'] = fragments.loc[UpDict[key],
                                                        'DamCount'].sum()
+        fragments.loc[key, 'StorUp'] = fragments.loc[UpDict[key],
+                                                     'Norm_stor'].sum()
     
     return fragments
 
-
-def degree_of_regulation(fragments, segments):
-    """Calculates the degree of regulation 
-
-    Using the upstream dictionary and the fragment summary database created by
-    map_up_frag() and agg_by_frag() respectively. This function appends columns
-    to the fragments database with values aggregated by upstream area. 
-
-    Parameters:
-        fragments (pandas.DataFrame): 
-             Fragments data frame created by the agg_by_fragg function
-        
-        UpDict (dict): 
-            Dictionary of upstream fragments created by map_up_frag function.
-    
-    Returns:
-        fragments (pandas.DataFrame): appended fragments dataframe.
-    """
-
-    fragments['NFragUp'] = np.zeros(len(fragments))
-    fragments['LengthUp'] = np.zeros(len(fragments))
-    fragments['NDamUp'] = np.zeros(len(fragments))
-
-    for key in UpDict:
-        #print(key)
-        fragments.loc[key, 'NFragUp'] = len(UpDict[key])
-        fragments.loc[key, 'LengthUp'] = fragments.loc[UpDict[key],
-                                                       'LENGTHKM'].sum()
-        fragments.loc[key, 'NDamUp'] = fragments.loc[UpDict[key],
-                                                     'DamCount'].sum()
-
-    return fragments

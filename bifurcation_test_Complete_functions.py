@@ -19,7 +19,7 @@ plt.style.use('classic')
 #                            'WKT', 'DamID', 'DamCount'])
 #"small1019.csv"
 # "extracted_HUC1019.csv"
-test = pd.read_csv("small1019.csv", index_col='Hydroseq',
+test = pd.read_csv("small1019_flowlines.csv", index_col='Hydroseq',
                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
                             'Pathlength', 'LENGTHKM', 'StartFlag',
                             'WKT', 'DamID',  'QC_MA', 'Norm_stor'])
@@ -85,6 +85,9 @@ print("Map Upstream fragments:", (t4-t3))
 
 #STEP 4: Aggregate by upstream area
 fragments=bfc.agg_by_frag_up(fragments, UpDict)
+#convert annual flow to acre feet
+fragments['QC_MA_AF'] = (fragments.QC_MA * 365 * 24 * 3600) / 43559.9 
+fragments['DOR'] = (fragments.StorUp) / (fragments.QC_MA_AF)
 t5 = datetime.datetime.now()
 
 print("---- TIMING SUMMARY -----")
@@ -94,10 +97,38 @@ print("Map Upstream fragments:", (t4-t3))
 print("Aggregate by upstream:", (t5-t4))
 print("Total Time:", (t5-t1))
 
-# %% 
-# Caculate the degree of regulation 
-# For every segement = total upstream storage/annual streamflow volume 
-# 
+# %%
+# Working on metrics
+# Problems 
+# - For the fragments the QC_MA is NA for the no dam fragments -- ie the outlet ones
+# - DOR actually only makes sense on the fragment level. See issuues with segments. 
+# - Would need to recalculate upstream storage by segments. 
+
+#STEP 5: Merge the fragment information back to the segments
+segments_summary = segments.merge(fragments, how='left', left_on='Frag',
+                       right_index=True, suffixes=('_seg', '_frag'))
+
+
+#calculate the upstream storage by segments
+segments_summary['StorUp_seg'] = np.zeros(len(segments_summary))
+damlist = segments_summary.index[segments_summary['Norm_stor_seg'] > 0]
+notdamlist = segments_summary.index[segments_summary.Norm_stor_seg.isnull()]
+
+# if its a segment with a dam then the upstream storage = fragment upstream storage
+segments_summary.loc[damlist,
+                'StorUp_seg'] = segments_summary.loc[damlist, 'StorUp']
+
+# if its not a segment with a dam then the upstream storage = fragment upstream storage - fragmenst storage
+segments_summary.loc[notdamlist,
+                'StorUp_seg'] = segments_summary.loc[notdamlist, 'StorUp'] - segments_summary.loc[notdamlist, 'Norm_stor_frag']
+
+
+#Degree of regulation 
+# Total upstream storage/Flow
+segments_summary['DOR'] = segments_summary.StorUp_seg  /  \
+    segments_summary.QC_MA_seg
+
+
 
 # %%
 #testing = segments.loc[segments.Frag == 0]
@@ -130,11 +161,27 @@ segments.plot(column='Frag', legend=True, cmap='viridis_r',
 segments.plot(column='Frag_Index', legend=True, cmap='viridis_r',
               legend_kwds={'label': "Fragment Index", 'orientation': "horizontal"})
 
+
+
 # %%
-segments.plot(column='Frag', legend=True, cmap='viridis_r',
-              legend_kwds={'label': "Fragment #", 'orientation': "horizontal"})
+ #plot segment information after the merge
+fig, ax = plt.subplots(1, 3)
+segments_summary.plot(column='StorUp',
+                      ax=ax[0], legend=True)
+segments_summary.plot(column='QC_MA_AF',
+                      ax=ax[1], legend=True)
+segments_summary.plot(column='DOR',
+                      ax=ax[2], legend=True)
 
-
+        
+#segments_summary.columns
+#Index(['Coordinates', 'LENGTHKM_seg', 'Pathlength', 'StartFlag', 'UpHydroseq',
+ #      'step', 'DamID', 'DnHydroseq_seg', 'QC_MA_seg', 'Norm_stor_seg',
+ #      'DamCount_seg', 'Frag', 'Headwater', 'Frag_Index_seg', 'DamCount_frag',
+ #      'LENGTHKM_frag', 'Norm_stor_frag', 'Frag_Index_frag', 'DnHydroseq_frag',
+ #      'QC_MA_frag', 'FragDn', 'HeadFlag', 'NFragUp', 'LengthUp', 'NDamUp',
+ #     'StorUp'],
+ #     dtype='object')
 
 # %%
 # Some plotting
