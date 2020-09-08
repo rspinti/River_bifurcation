@@ -43,10 +43,15 @@ nabd['GRAND_ID'] = nabd['GRAND_ID'].fillna(0)
 nabd.loc[nabd.GRAND_ID != 0, 'Grand_flag'] = 1 #if a GRanD ID exists, make flag =1 
 
 ## NHD
-flowlines = pd.read_csv(gdrive/"NHDPlusNationalData/NHDFlowlines.csv",
-                            usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
-                                     'REACHCODE','LENGTHKM', 'StartFlag', 
-                                     'FTYPE', 'COMID', 'WKT', 'QE_MA', 'QC_MA'])  #all NHD Flowlines
+
+# flowlines = pd.read_csv(gdrive/"NHDPlusNationalData/NHDFlowlines.csv",
+#                             usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
+#                                      'REACHCODE','LENGTHKM', 'StartFlag', 
+#                                      'FTYPE', 'COMID', 'WKT', 'QE_MA', 'QC_MA'])  #all NHD Flowlines
+flowlines = pd.read_csv("/Users/rachelspinti/Documents/River_bifurcation/data/nhd/NHDFlowlines.csv",
+                        usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
+                                 'REACHCODE','LENGTHKM', 'StartFlag', 
+                                 'FTYPE', 'COMID', 'WKT', 'QE_MA', 'QC_MA'])  #all NHD Flowlines
 #Filter the flowlines to select by HUC 2
 flowlines['REACHCODE'] = flowlines['REACHCODE']/(10**12) #convert Reachcode to HUC 2 format
 flowlines['REACHCODE'] = flowlines['REACHCODE'].apply(np.floor) #round down to integer
@@ -57,7 +62,7 @@ flowlines[['UpHydroseq', 'DnHydroseq', 'Hydroseq']] = flowlines[['UpHydroseq',
 flowlines = flowlines[flowlines['FTYPE']!= 'Coastline']  #filter out coastlines
 # %%
 # Choose the major river basin to Run
-run_name = 'South Atlantic'  #type river basin name
+run_name = 'Mississippi'  #type river basin name
 #run name options
 # ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes', 
 #  'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']

@@ -298,7 +298,7 @@ def join_dams_flowlines(flowlines, run_name, nabd):
     # Creates csv for each run_name
     segments_df = nabd_nhd_df.copy()
     segments_df.to_csv(run_name+'.csv')  
-    print('Finished writing segments_df to csv..........', segments_df.head(3))
+    print('Finished writing segments_df to csv..........')
     
     t4 = time()
     print("---- TIMING SUMMARY -----")
