@@ -53,7 +53,8 @@ flowlines = pd.read_csv("/Users/rachelspinti/Documents/River_bifurcation/data/nh
                                  'REACHCODE','LENGTHKM', 'StartFlag', 
                                  'FTYPE', 'COMID', 'WKT', 'QE_MA', 'QC_MA'])  #all NHD Flowlines
 #Filter the flowlines to select by HUC 2
-flowlines['REACHCODE'] = flowlines['REACHCODE']/(10**12) #convert Reachcode to HUC 2 format
+# flowlines['REACHCODE'] = flowlines['REACHCODE']/(10**12) #convert Reachcode to HUC 2 format
+flowlines['REACHCODE'] = flowlines['REACHCODE']/(10**10) #convert Reachcode to HUC 4 format
 flowlines['REACHCODE'] = flowlines['REACHCODE'].apply(np.floor) #round down to integer
 #round the hydroseq values because of bug
 flowlines[['UpHydroseq', 'DnHydroseq', 'Hydroseq']] = flowlines[['UpHydroseq', 
