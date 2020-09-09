@@ -19,3 +19,7 @@
 *.png
 read_flowlines.py
 upstream_count.py
+
+__pycache__/
+
+*.pyc

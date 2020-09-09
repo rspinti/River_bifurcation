@@ -26,6 +26,13 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
         
         exit_id (int, optional): 
             Initial ID number to use for labeling terminal fragments.
+        
+        subwatershed (boolean, optional):
+             If Subbasins is set to true it will identify headwaters as segements 
+             which are not listed as downstream neighbors (DnHydroSeq) to any other basins
+
+             If this is set to False it  will select all subbasins whith an UpHydroseq == 0 
+
     
     Returns:
         segments (pandas.DataFrame): An updated dataframe with a fragments column.
@@ -63,7 +70,7 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
     #        if not upstream in segments.index and upstream != 0:
     #            #print("adding segment",  ii, " upstream=", upstream, "queue length", len(queue))
     #            queue = queue.append(segments.loc[ii])
-#
+    #
     #        #Check if there are no segments which drain to this one
     #        if not ii in segments.DnHydroseq.values:
     #            #print("adding segment",  ii, "queue length", len(queue))
@@ -304,3 +311,109 @@ def agg_by_frag_up(fragments, UpDict):
     
     return fragments
 
+
+def map_up_seg(segments, subwatershed=True):
+    """Create a dictionary of upstream segments for every segment.
+
+    Starting from the segments dataframe 
+    This creates a dictionary where each segment is a Key and each Key
+    contains a list of upstream sement IDs. 
+
+    Parameters:
+        segments (pandas.DataFrame): 
+             This dataframe shoudl be indexed by segment ID and it must contain
+             the key 'DnHydroseq' which includes the downstream segment ID
+
+             Additionally if the subbasins key is set to false it will require a 
+             UpHydroseq key to find headwater cells. 
+        
+        subwatershed (boolean, optional):
+             If Subbasins is set to true it will identify headwaters as segements 
+             which are not listed as downstream neighbors (DnHydroSeq) to any other basins
+
+             If this is set to False it  will select all subbasins whith an UpHydroseq == 0 
+    
+    Returns:
+        UpDict (dict): Dictionary of upstream fragment IDs for ever fragment
+    """
+    # Initialize the dictionary
+    UpDict = dict.fromkeys(segments.index)
+    
+    #Loop through and initialize every fragment list with itself
+    for ind in range(len(segments)):
+        stemp = segments.index[ind]
+        UpDict[stemp] = [stemp]
+        #print(ftemp)
+
+    #Make a list of all the headwater segments to start from
+    # if the subwatershed option is true any segment which is not the
+    # downstream neigbhor of another segment is  identified as a headwater
+    # If not only grab those segments with an upstream  hydroseq = 0
+    if subwatershed:
+        intersect = np.intersect1d(segments.index, segments.DnHydroseq.values)
+        queue = segments[~segments.index.isin(intersect)]
+    else:
+        #initialize queue with all segments with upstream ID of 0
+        queue = segments.loc[segments.UpHydroseq == 0]
+
+    # Work downstream adding to the segment lists
+    while len(queue) > 0:
+        DnSeg = queue.DnHydroseq.iloc[0]
+        stemp = queue.index[0]
+        #print("Segment:", stemp, "Downstream:", DnFrag)
+
+        # if the downstream segment is not NA 
+        # and it is in the segments list
+        # append the current segments list to it
+        # and add the downstream segment to the queue
+        if not np.isnan(DnSeg) and DnSeg in segments.index:
+            #print("HERE")
+            UpDict[DnSeg].extend(UpDict[stemp])
+            queue = queue.append(segments.loc[DnSeg])
+
+        #remove the current segment from the queue
+        queue = queue.drop(queue.index[0])
+
+    # Remove the duplicate values in each list
+    for key in UpDict:
+        #print(key)
+        UpDict[key] = list(dict.fromkeys(UpDict[key]))
+
+    return UpDict
+
+
+def agg_by_seg_up(segments, UpDict):
+    """Aggregates segment values by upstream segments
+
+    Using the upstream dictionary created by map_up_seg()
+    and a segment database created by
+    This function appends columns to the input segments database 
+    with values aggregated by upstream area. 
+
+    Parameters:
+        segments (pandas.DataFrame): 
+             Segments data frame 
+        
+        UpDict (dict): 
+            Dictionary of upstream fragments created by map_up_seg function.
+    
+    Returns:
+        segments (pandas.DataFrame): appended segments dataframe.
+    """
+
+    segments['NSegUp'] = np.zeros(len(segments))
+    segments['LengthUp'] = np.zeros(len(segments))
+    segments['NDamUp'] = np.zeros(len(segments))
+    segments['StorUp'] = np.zeros(len(segments))
+
+    for key in UpDict:
+        #print(key)
+        segments.loc[key, 'NFragUp'] = len(UpDict[key])
+        segments.loc[key, 'LengthUp'] = segments.loc[UpDict[key],
+                                                       'LENGTHKM'].sum()
+        segments.loc[key, 'NDamUp'] = segments.loc[UpDict[key],
+                                                     'DamCount'].sum()
+        segments.loc[key, 'StorUp'] = segments.loc[UpDict[key],
+                                                     'Norm_stor'].sum()
+
+    return segments
