@@ -1,4 +1,5 @@
 import numpy as np
+import datetime
 
 def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
     """Create stream fragments from stream segments based on dam locations.
@@ -250,28 +251,56 @@ def map_up_frag(fragments):
         #print(ftemp)
 
     #Make a list of all the headwater fragments to start from
-    queuef = fragments.loc[fragments.HeadFlag == 1]
+    #queuef = fragments.loc[fragments.HeadFlag == 1]
+
+    # Figure out how many fragments are directly upstream from each fragment
+    # i.e. how many parents it  has
+    fragments['nparent'] = np.zeros(len(fragments))
+    for f in range(len(fragments)):
+        fragments.nparent[f] = len(fragments.loc[fragments.FragDn ==
+                                                 fragments.index[f]])
+
+    # Make a queue of fragments with no parents to start from
+    queuef = fragments.loc[fragments.nparent == 0]
+
+    #Initialize a counter of the number of parents visited
+    fragments['parent_count'] = np.zeros(len(fragments))
 
     # Work downstream adding to the fragment lists
     while len(queuef) > 0:
         DnFrag = queuef.FragDn.iloc[0]
         ftemp = queuef.index[0]
+
         #print("Fragment:", ftemp, "Downstream:", DnFrag)
 
-        # if the downstream fragment exists adppend the current fagments list to it
-        # and add the downstream fragment to the queue
+        # if the downstream fragment exists 
+        # Add all of the parents of the current fragment to its downstream neigbor
+        # and add one to the visited parent count of that neighbor
         if not np.isnan(DnFrag):
-            #print("HERE")
             UpDict[DnFrag].extend(UpDict[ftemp])
-            queuef = queuef.append(fragments.loc[DnFrag])
+            fragments.loc[DnFrag, 'parent_count'] += 1
+
+            # If the # of visitied parents ('parent_count')
+            #  == the number of parents (nparent) then 
+            # add the downstream neigbor to the queue 
+
+            if fragments.loc[DnFrag, 'parent_count'] ==  \
+                    fragments.loc[DnFrag, 'nparent']:
+
+                #print("HERE Fragment:", ftemp, "Downstream fragment",
+                #      DnFrag,  "nparent ", fragments.loc[DnFrag, 'nparent'],
+                #      fragments.loc[DnFrag, 'parent_count'])
+
+                queuef = queuef.append(fragments.loc[DnFrag])
 
         #remove the current fragment from the queue
         queuef = queuef.drop(queuef.index[0])
 
     # Remove the duplicate values in each list
-    for key in UpDict:
-        #print(key)
-        UpDict[key] = list(dict.fromkeys(UpDict[key]))
+    # Shouldn't need to do this anymore
+    #for key in UpDict:
+    #    #print(key)
+    #    UpDict[key] = list(dict.fromkeys(UpDict[key]))
 
     return UpDict
 
@@ -312,9 +341,83 @@ def agg_by_frag_up(fragments, UpDict):
     return fragments
 
 
+def upstream_ag(data, downIDs, agg_value):
+    #t0 = datetime.datetime.now()
+    #IDs=data.index
+    #downIDs=data['DnHydroseq']
+    #agg_value=data['Norm_stor']
+
+    #up_agg=pd.DataFrame(index=IDs, data={'downID': data[downIDs], 'values':agg_value})
+
+    #Make a dataframe with just the values of interest
+    up_agg = data[[downIDs, agg_value]]
+
+    #Start off giving every ID its onwn v
+    upvar=agg_value + '_up'
+    up_agg[upvar] = up_agg[agg_value]
+
+    # Figure out how segments are directly upstream from each segment
+    # i.e. how many parents it has
+    t1 = datetime.datetime.now()
+    up_agg['nparent'] = np.zeros(len(data))
+    for i in range(len(up_agg)):
+        up_agg.nparent[i] = len(up_agg.loc[up_agg[downIDs] ==
+                                                 up_agg.index[i]])
+
+    t2 = datetime.datetime.now()
+    print("Counting parents: ", (t2-t1))
+
+    # Make a queue of segments with no parents to start from
+    t1 = datetime.datetime.now()
+    queuef = up_agg.loc[up_agg.nparent == 0]
+    t2 = datetime.datetime.now()
+    print("Initializing Queue: ", (t2-t1))
+
+    #Initialize a counter of the number of parents visited
+    up_agg['parent_count'] = np.zeros(len(up_agg))
+
+    #Count number of segments in the upstream aggregation
+    up_agg['segment_count'] = np.ones(len(up_agg))
+
+    # Work downstream adding to the fragment lists
+    t1 = datetime.datetime.now()
+    while len(queuef) > 0:
+        #DnTemp = queuef.downIDs.iloc[0] #downstream ID
+        DnTemp = queuef.iloc[0][downIDs]  # downstream ID
+
+        ftemp = queuef.index[0] #current ID
+
+        # if the downstream ID exists
+        # Add all of the parents of the current fragment to its downstream neigbor
+        # and add one to the visited parent count of that neighbor
+        if not np.isnan(DnTemp) and DnTemp in up_agg.index:
+            up_agg.loc[DnTemp, upvar] += up_agg.loc[ftemp, upvar]
+            up_agg.loc[DnTemp, 'segment_count'] += up_agg.loc[ftemp,
+                                                              'segment_count']
+            up_agg.loc[DnTemp, 'parent_count'] += 1
+
+            # If the # of visitied parents ('parent_count')
+            #  == the number of parents (nparent) then
+            # add the downstream neigbor to the queue
+
+            if up_agg.loc[DnTemp, 'parent_count'] ==  \
+                    up_agg.loc[DnTemp, 'nparent']:
+
+                queuef = queuef.append(up_agg.loc[DnTemp])
+
+        #remove the current fragment from the queue
+        queuef = queuef.drop(queuef.index[0])
+
+    t2 = datetime.datetime.now()
+    print("Aggregating: ", (t2-t1))
+
+
+    return up_agg
+
 def map_up_seg(segments, subwatershed=True):
     """Create a dictionary of upstream segments for every segment.
 
+    VERY SLOW... Needs fixing
     Starting from the segments dataframe 
     This creates a dictionary where each segment is a Key and each Key
     contains a list of upstream sement IDs. 
@@ -417,3 +520,60 @@ def agg_by_seg_up(segments, UpDict):
                                                      'Norm_stor'].sum()
 
     return segments
+
+
+def map_up_frag0(fragments):
+    """Create a dictionary of upstream fragments for every fragment.
+
+    Starting from the fragments dataframe created by agg_by_frag() 
+    This creates a dictionary where each fragment is a Key and each Key
+    contains a list of upstream fragment IDs. 
+
+    This is the older approach -- where downstream fragments are always added 
+    the queue and clean up happens at the end of the function. 
+
+    Parameters:
+        fragments (pandas.DataFrame): 
+             Fragments data frame created by the agg_by_fragg function
+    
+    Returns:
+        UpDict (dict): Dictionary of upstream fragment IDs for ever fragment
+    """
+    # STEP 3 : Make a list of the upstream fragments for every fragment
+    #  Make a dictionary using the fragments as Keys
+    #  with a list for every fragment of its upstream fragments
+
+    # Initialize the dictionary
+    UpDict = dict.fromkeys(fragments.index)
+
+    #Loop through and initialize every fragment list with itself
+    for ind in range(len(fragments)):
+        ftemp = fragments.index[ind]
+        UpDict[ftemp] = [ftemp]
+        #print(ftemp)
+
+    #Make a list of all the headwater fragments to start from
+    queuef = fragments.loc[fragments.HeadFlag == 1]
+
+    # Work downstream adding to the fragment lists
+    while len(queuef) > 0:
+        DnFrag = queuef.FragDn.iloc[0]
+        ftemp = queuef.index[0]
+
+        #print("Fragment:", ftemp, "Downstream:", DnFrag)
+
+        # if the downstream fragment exists append the current fagments list to it
+        # and add the downstream fragment to the queue
+        if not np.isnan(DnFrag):
+            UpDict[DnFrag].extend(UpDict[ftemp])
+            queuef = queuef.append(fragments.loc[DnFrag])
+
+        #remove the current fragment from the queue
+        queuef = queuef.drop(queuef.index[0])
+
+    # Remove the duplicate values in each list
+    for key in UpDict:
+        #print(key)
+        UpDict[key] = list(dict.fromkeys(UpDict[key]))
+
+    return UpDict

@@ -23,3 +23,5 @@ upstream_count.py
 __pycache__/
 
 *.pyc
+
+.vscode/

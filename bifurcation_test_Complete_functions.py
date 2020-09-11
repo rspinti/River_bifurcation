@@ -20,7 +20,7 @@ plt.style.use('classic')
 #"small1019.csv"
 # "extracted_HUC1019.csv"
 # "Red.csv"
-test = pd.read_csv("Red.csv", index_col='Hydroseq',
+test = pd.read_csv("extracted_HUC1019.csv", index_col='Hydroseq',
                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
                             'LENGTHKM', 'StartFlag', 'DamCount',
                             'Coordinates', 'DamID',  'QC_MA', 'Norm_stor'])
@@ -96,12 +96,24 @@ fragments=bfc.agg_by_frag_up(fragments, UpDict)
 fragments['QC_MA_AF'] = (fragments.QC_MA * 365 * 24 * 3600) / 43559.9 
 fragments['DOR'] = (fragments.StorUp) / (fragments.QC_MA_AF)
 t5 = datetime.datetime.now()
-print("Aggregate by Upstream segments:", (t5-t4))
+print("Aggregate by Upstream fragments:", (t5-t4))
+
+#STEP 5: Aggregate segments by upstream 
+t6 = datetime.datetime.now()
+segments_up = bfc.upstream_ag(data=segments, downIDs = 'DnHydroseq', agg_value='Norm_stor')
+t7 = datetime.datetime.now()
+print("Aggregate by Upstream segments:", (t7-t6))
+
+## add these columns to the segments datafamre
+segments['segment_count'] = segments_up['segment_count']
+segments['Norm_stor_up'] = segments_up['Norm_stor_up']
 
 print("---- TIMING SUMMARY -----")
 print("Make Fragments:", (t2-t1))
 print("Aggregate by fragments:", (t3-t2))
 print("Map Upstream fragments:", (t4-t3))
+print("Map Upstream fragments:", (t5-t4))
+print("Agg Segments Upstream:", (t7-t6))
 
 
 # %%
@@ -110,7 +122,6 @@ t5.5 = datetime.datetime.now()
 UpDictSeg = bfc.map_up_seg(segments)
 t6 = datetime.datetime.now()
 print("Map Upstream segments:", (t6-t5.5))
-
 
 
 print("---- TIMING SUMMARY -----")
@@ -185,6 +196,17 @@ segments.plot(column='Frag', legend=True, cmap='viridis_r',
 segments.plot(column='Frag_Index', legend=True, cmap='viridis_r',
               legend_kwds={'label': "Fragment Index", 'orientation': "horizontal"})
 
+segments.plot(column='step', legend=True, cmap='viridis_r',
+              legend_kwds={'label': "Fragment Index", 'orientation': "horizontal"})
+
+segments.plot(column='segment_count', legend=True, cmap='viridis_r',
+              legend_kwds={'label': "Fragment Index", 'orientation': "horizontal"})
+
+segments.plot(column='Norm_stor_up', legend=True, cmap='viridis_r',
+              legend_kwds={'label': "Fragment Index", 'orientation': "horizontal"})
+
+segments.plot(column='Norm_stor', legend=True, cmap='viridis_r',
+              legend_kwds={'label': "Fragment Index", 'orientation': "horizontal"})
 
 
 # %%
