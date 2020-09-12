@@ -359,17 +359,16 @@ def upstream_ag(data, downIDs, agg_value):
     # Figure out how segments are directly upstream from each segment
     # i.e. how many parents it has
     t1 = datetime.datetime.now()
-    up_agg['nparent'] = np.zeros(len(data))
-    for i in range(len(up_agg)):
-        up_agg.nparent[i] = len(up_agg.loc[up_agg[downIDs] ==
-                                                 up_agg.index[i]])
-
+    pcount = up_agg[downIDs].value_counts(ascending=True)
+    up_agg['nparent'] = pcount
+    up_agg['nparent'] = up_agg['nparent'].fillna(0)
+    #up_agg.isnull().sum(axis=0)
     t2 = datetime.datetime.now()
     print("Counting parents: ", (t2-t1))
 
     # Make a queue of segments with no parents to start from
     t1 = datetime.datetime.now()
-    queuef = up_agg.loc[up_agg.nparent == 0]
+    queuef = up_agg.loc[up_agg['nparent'] == 0]
     t2 = datetime.datetime.now()
     print("Initializing Queue: ", (t2-t1))
 

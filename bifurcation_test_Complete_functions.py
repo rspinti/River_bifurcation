@@ -189,9 +189,9 @@ print(segments.loc[segments.Frag == 0])  # check for any segments not covered
 #segments.plot(column='Frag', legend=True, cmap='viridis_r',
 #              legend_kwds={'label': "Fragment #", 'orientation': "horizontal"},
 #              vmin=52000, vmax=52040)
-segments.plot(column='Frag', legend=True, cmap='viridis_r',
-              legend_kwds={'label': "Fragment #", 'orientation': "horizontal"},
-              vmin=51000,vmax=51005)
+#segments.plot(column='Frag', legend=True, cmap='viridis_r',
+#              legend_kwds={'label': "Fragment #", 'orientation': "horizontal"},
+#              vmin=51000,vmax=51005)
 
 segments.plot(column='Frag_Index', legend=True, cmap='viridis_r',
               legend_kwds={'label': "Fragment Index", 'orientation': "horizontal"})
@@ -200,7 +200,8 @@ segments.plot(column='step', legend=True, cmap='viridis_r',
               legend_kwds={'label': "Fragment Index", 'orientation': "horizontal"})
 
 segments.plot(column='segment_count', legend=True, cmap='viridis_r',
-              legend_kwds={'label': "Fragment Index", 'orientation': "horizontal"})
+              legend_kwds={'label': "Fragment Index", 'orientation': "horizontal"},
+              vmin=1, vmax=50)
 
 segments.plot(column='Norm_stor_up', legend=True, cmap='viridis_r',
               legend_kwds={'label': "Fragment Index", 'orientation': "horizontal"})
