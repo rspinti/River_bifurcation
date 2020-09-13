@@ -59,6 +59,30 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
     segments['Headwater']=np.zeros(len(segments))
     segments.loc[queue.index,'Headwater'] = 1
 
+    ## Old Queu steup -- need to delete
+    ##If the flag is on then also add segments who's upstream segment is not included
+    ##or that are not any other segments downstream neighbor
+    #if subwatershed: 
+    #    print("Including segments with upstream hydro seq not in segments list as headwaters")
+    #    for ii in segments.index: 
+    #        #print(ii)
+    #        upstream = segments.loc[ii, 'UpHydroseq']
+    #        #Check if the upstream neigbhor doesn't exist in the segments DF
+    #        if not upstream in segments.index and upstream != 0:
+    #            #print("adding segment",  ii, " upstream=", upstream, "queue length", len(queue))
+    #            queue = queue.append(segments.loc[ii])
+    #
+    #        #Check if there are no segments which drain to this one
+    #        if not ii in segments.DnHydroseq.values:
+    #            #print("adding segment",  ii, "queue length", len(queue))
+    #            queue = queue.append(segments.loc[ii])
+  
+
+    # Initail number to use for fragments that are existing the  domain
+    # Rather than hitting a dam. Exiting framents will start counting from
+    # this number
+    #fexit = 11
+
     snum = 0  # Counter for the segment starting points -- just for print purposes
     while len(queue) > 0:
         # Initialiazation for starting segment:
@@ -318,41 +342,18 @@ def agg_by_frag_up(fragments, UpDict):
 
 
 def upstream_ag(data, downIDs, agg_value):
-    """Aggregates values by upstream 
+    #t0 = datetime.datetime.now()
+    #IDs=data.index
+    #downIDs=data['DnHydroseq']
+    #agg_value=data['Norm_stor']
 
-    This function traverses through a stream network summing aggregating variable by 
-    upstream area.  It requries an input dataframe which contains segment or fragment
-    IDs, downstream IDs (downIDs) and a list of columns to be aggregated (agg_value). 
-
-    The resulting dataframe will have '_up' fields added which are the upstream sums
-    of all of the fields listed in agg_value. Additionally, a count of the number of 
-    upstream segments or fragments is provided if you would like to convert sums to averages
-
-    Parameters:
-        data (pandas.DataFrame): 
-            Data frame of segements or fragments where the index is the segment or fragment
-            ID. It must contain a 'downIDs' column with downstream segement or fragment IDS
-            and at least on column to be aggregated (agg_value).
-        
-        downIDs (string): 
-            Column name that contains the downstream IDs within the dataframe
-        
-        agg_value (list):
-            List of columns in the data frame to be aggregated. 
-    
-    Returns:
-        segments (pandas.DataFrame): An updated dataframe with the aggregated values
-    """
-
+    #up_agg=pd.DataFrame(index=IDs, data={'downID': data[downIDs], 'values':agg_value})
 
     #Make a dataframe with just the values of interest
-    pick=agg_value.copy()
-    pick.append(downIDs)
-    up_agg = data[pick]
-    #up_agg = data[[downIDs, agg_value]]
+    up_agg = data[[downIDs, agg_value]]
 
     #Start off giving every ID its onwn v
-    upvar = [s + '_up' for s in agg_value]
+    upvar=agg_value + '_up'
     up_agg[upvar] = up_agg[agg_value]
 
     # Figure out how segments are directly upstream from each segment
@@ -363,16 +364,19 @@ def upstream_ag(data, downIDs, agg_value):
     up_agg['nparent'] = up_agg['nparent'].fillna(0)
     #up_agg.isnull().sum(axis=0)
     t2 = datetime.datetime.now()
-    #print("Counting parents: ", (t2-t1))
+    print("Counting parents: ", (t2-t1))
 
     # Make a queue of segments with no parents to start from
+    t1 = datetime.datetime.now()
     queuef = up_agg.loc[up_agg['nparent'] == 0]
+    t2 = datetime.datetime.now()
+    print("Initializing Queue: ", (t2-t1))
 
     #Initialize a counter of the number of parents visited
     up_agg['parent_count'] = np.zeros(len(up_agg))
 
     #Count number of segments in the upstream aggregation
-    up_agg['upstream_count'] = np.ones(len(up_agg))
+    up_agg['segment_count'] = np.ones(len(up_agg))
 
     # Work downstream adding to the fragment lists
     t1 = datetime.datetime.now()
@@ -386,8 +390,8 @@ def upstream_ag(data, downIDs, agg_value):
         # and add one to the visited parent count of that neighbor
         if not np.isnan(DnTemp) and DnTemp in up_agg.index:
             up_agg.loc[DnTemp, upvar] += up_agg.loc[ftemp, upvar]
-            up_agg.loc[DnTemp, 'upstream_count'] += up_agg.loc[ftemp,
-                                                               'upstream_count']
+            up_agg.loc[DnTemp, 'segment_count'] += up_agg.loc[ftemp,
+                                                              'segment_count']
             up_agg.loc[DnTemp, 'parent_count'] += 1
 
             # If the # of visitied parents ('parent_count')
@@ -403,7 +407,171 @@ def upstream_ag(data, downIDs, agg_value):
         queuef = queuef.drop(queuef.index[0])
 
     t2 = datetime.datetime.now()
-    #print("Aggregating: ", (t2-t1))
+    print("Aggregating: ", (t2-t1))
 
 
     return up_agg
+
+def map_up_seg(segments, subwatershed=True):
+    """Create a dictionary of upstream segments for every segment.
+
+    VERY SLOW... Needs fixing
+    Starting from the segments dataframe 
+    This creates a dictionary where each segment is a Key and each Key
+    contains a list of upstream sement IDs. 
+
+    Parameters:
+        segments (pandas.DataFrame): 
+             This dataframe shoudl be indexed by segment ID and it must contain
+             the key 'DnHydroseq' which includes the downstream segment ID
+
+             Additionally if the subbasins key is set to false it will require a 
+             UpHydroseq key to find headwater cells. 
+        
+        subwatershed (boolean, optional):
+             If Subbasins is set to true it will identify headwaters as segements 
+             which are not listed as downstream neighbors (DnHydroSeq) to any other basins
+
+             If this is set to False it  will select all subbasins whith an UpHydroseq == 0 
+    
+    Returns:
+        UpDict (dict): Dictionary of upstream fragment IDs for ever fragment
+    """
+    # Initialize the dictionary
+    UpDict = dict.fromkeys(segments.index)
+    
+    #Loop through and initialize every fragment list with itself
+    for ind in range(len(segments)):
+        stemp = segments.index[ind]
+        UpDict[stemp] = [stemp]
+        #print(ftemp)
+
+    #Make a list of all the headwater segments to start from
+    # if the subwatershed option is true any segment which is not the
+    # downstream neigbhor of another segment is  identified as a headwater
+    # If not only grab those segments with an upstream  hydroseq = 0
+    if subwatershed:
+        intersect = np.intersect1d(segments.index, segments.DnHydroseq.values)
+        queue = segments[~segments.index.isin(intersect)]
+    else:
+        #initialize queue with all segments with upstream ID of 0
+        queue = segments.loc[segments.UpHydroseq == 0]
+
+    # Work downstream adding to the segment lists
+    while len(queue) > 0:
+        DnSeg = queue.DnHydroseq.iloc[0]
+        stemp = queue.index[0]
+        #print("Segment:", stemp, "Downstream:", DnFrag)
+
+        # if the downstream segment is not NA 
+        # and it is in the segments list
+        # append the current segments list to it
+        # and add the downstream segment to the queue
+        if not np.isnan(DnSeg) and DnSeg in segments.index:
+            #print("HERE")
+            UpDict[DnSeg].extend(UpDict[stemp])
+            queue = queue.append(segments.loc[DnSeg])
+
+        #remove the current segment from the queue
+        queue = queue.drop(queue.index[0])
+
+    # Remove the duplicate values in each list
+    for key in UpDict:
+        #print(key)
+        UpDict[key] = list(dict.fromkeys(UpDict[key]))
+
+    return UpDict
+
+
+def agg_by_seg_up(segments, UpDict):
+    """Aggregates segment values by upstream segments
+
+    Using the upstream dictionary created by map_up_seg()
+    and a segment database created by
+    This function appends columns to the input segments database 
+    with values aggregated by upstream area. 
+
+    Parameters:
+        segments (pandas.DataFrame): 
+             Segments data frame 
+        
+        UpDict (dict): 
+            Dictionary of upstream fragments created by map_up_seg function.
+    
+    Returns:
+        segments (pandas.DataFrame): appended segments dataframe.
+    """
+
+    segments['NSegUp'] = np.zeros(len(segments))
+    segments['LengthUp'] = np.zeros(len(segments))
+    segments['NDamUp'] = np.zeros(len(segments))
+    segments['StorUp'] = np.zeros(len(segments))
+
+    for key in UpDict:
+        #print(key)
+        segments.loc[key, 'NFragUp'] = len(UpDict[key])
+        segments.loc[key, 'LengthUp'] = segments.loc[UpDict[key],
+                                                       'LENGTHKM'].sum()
+        segments.loc[key, 'NDamUp'] = segments.loc[UpDict[key],
+                                                     'DamCount'].sum()
+        segments.loc[key, 'StorUp'] = segments.loc[UpDict[key],
+                                                     'Norm_stor'].sum()
+
+    return segments
+
+
+def map_up_frag0(fragments):
+    """Create a dictionary of upstream fragments for every fragment.
+
+    Starting from the fragments dataframe created by agg_by_frag() 
+    This creates a dictionary where each fragment is a Key and each Key
+    contains a list of upstream fragment IDs. 
+
+    This is the older approach -- where downstream fragments are always added 
+    the queue and clean up happens at the end of the function. 
+
+    Parameters:
+        fragments (pandas.DataFrame): 
+             Fragments data frame created by the agg_by_fragg function
+    
+    Returns:
+        UpDict (dict): Dictionary of upstream fragment IDs for ever fragment
+    """
+    # STEP 3 : Make a list of the upstream fragments for every fragment
+    #  Make a dictionary using the fragments as Keys
+    #  with a list for every fragment of its upstream fragments
+
+    # Initialize the dictionary
+    UpDict = dict.fromkeys(fragments.index)
+
+    #Loop through and initialize every fragment list with itself
+    for ind in range(len(fragments)):
+        ftemp = fragments.index[ind]
+        UpDict[ftemp] = [ftemp]
+        #print(ftemp)
+
+    #Make a list of all the headwater fragments to start from
+    queuef = fragments.loc[fragments.HeadFlag == 1]
+
+    # Work downstream adding to the fragment lists
+    while len(queuef) > 0:
+        DnFrag = queuef.FragDn.iloc[0]
+        ftemp = queuef.index[0]
+
+        #print("Fragment:", ftemp, "Downstream:", DnFrag)
+
+        # if the downstream fragment exists append the current fagments list to it
+        # and add the downstream fragment to the queue
+        if not np.isnan(DnFrag):
+            UpDict[DnFrag].extend(UpDict[ftemp])
+            queuef = queuef.append(fragments.loc[DnFrag])
+
+        #remove the current fragment from the queue
+        queuef = queuef.drop(queuef.index[0])
+
+    # Remove the duplicate values in each list
+    for key in UpDict:
+        #print(key)
+        UpDict[key] = list(dict.fromkeys(UpDict[key]))
+
+    return UpDict

@@ -20,7 +20,7 @@ plt.style.use('classic')
 #"small1019.csv"
 # "extracted_HUC1019.csv"
 # "Red.csv"
-test = pd.read_csv("extracted_HUC1019.csv", index_col='Hydroseq',
+test = pd.read_csv("Red.csv", index_col='Hydroseq',
                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
                             'LENGTHKM', 'StartFlag', 'DamCount',
                             'Coordinates', 'DamID',  'QC_MA', 'Norm_stor'])
@@ -201,7 +201,7 @@ segments.plot(column='step', legend=True, cmap='viridis_r',
 
 segments.plot(column='segment_count', legend=True, cmap='viridis_r',
               legend_kwds={'label': "Fragment Index", 'orientation': "horizontal"},
-              vmin=1, vmax=50)
+              vmin=1, vmax=5000)
 
 segments.plot(column='Norm_stor_up', legend=True, cmap='viridis_r',
               legend_kwds={'label': "Fragment Index", 'orientation': "horizontal"})
