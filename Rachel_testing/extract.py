@@ -170,7 +170,7 @@ def join_dams_flowlines(flowlines, run_name, nabd):
                     'Great Basin' : [16], 
                     'Great Lakes' : [4],
                     'Gulf Coast' : [12],
-                    'Mississippi' : [5, 6, 7, 8, 1019, 11],
+                    'Mississippi' : [5, 6, 7, 8, 10, 11],
                     'North Atlantic' : [1, 2],
                     'Red' : [9],
                     'Rio Grande' : [13],
@@ -211,19 +211,19 @@ def join_dams_flowlines(flowlines, run_name, nabd):
         gulf_coast = flowlines.loc[(flowlines['REACHCODE'] == major_basins[run_name][0])]
         nabd_nhd_join = nabd.merge(gulf_coast, how= 'right', on='COMID') # Merge NABD and Gulf Coast
         
-    # if run_name == 'Mississippi':
-    #     #create dataframe with Mississippi flowlines
-    #     mississippi = flowlines.loc[(flowlines['REACHCODE'] == major_basins[run_name][0])|
-    #     (flowlines['REACHCODE'] == major_basins[run_name][1]) |
-    #     (flowlines['REACHCODE'] == major_basins[run_name][2]) |
-    #     (flowlines['REACHCODE'] == major_basins[run_name][3]) | 
-    #     (flowlines['REACHCODE'] == major_basins[run_name][4]) |
-    #     (flowlines['REACHCODE'] == major_basins[run_name][5])]
-    #     nabd_nhd_join = nabd.merge(mississippi, how= 'right', on='COMID') # Merge NABD and Mississippi
     if run_name == 'Mississippi':
         #create dataframe with Mississippi flowlines
-        mississippi = flowlines.loc[(flowlines['REACHCODE'] == major_basins[run_name][4])]
+        mississippi = flowlines.loc[(flowlines['REACHCODE'] == major_basins[run_name][0])|
+        (flowlines['REACHCODE'] == major_basins[run_name][1]) |
+        (flowlines['REACHCODE'] == major_basins[run_name][2]) |
+        (flowlines['REACHCODE'] == major_basins[run_name][3]) | 
+        (flowlines['REACHCODE'] == major_basins[run_name][4]) |
+        (flowlines['REACHCODE'] == major_basins[run_name][5])]
         nabd_nhd_join = nabd.merge(mississippi, how= 'right', on='COMID') # Merge NABD and Mississippi
+    # if run_name == 'Mississippi':
+    #     #create dataframe with Mississippi flowlines
+    #     mississippi = flowlines.loc[(flowlines['REACHCODE'] == major_basins[run_name][4])]
+    #     nabd_nhd_join = nabd.merge(mississippi, how= 'right', on='COMID') # Merge NABD and Mississippi
         
     if run_name == 'North Atlantic':
         #create dataframe with North Atlantic flowlines
@@ -297,8 +297,8 @@ def join_dams_flowlines(flowlines, run_name, nabd):
   
     # Creates csv for each run_name
     segments_df = nabd_nhd_df.copy()
-    # segments_df.to_csv(run_name+'.csv')  
-    segments_df.to_csv('extracted_HUC1019.csv') #for extracted HUC
+    segments_df.to_csv(run_name+'.csv')  
+    # segments_df.to_csv('extracted_HUC1019.csv') #for extracted HUC
     print('Finished writing segments_df to csv..........')
     
     t4 = time()
