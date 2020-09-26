@@ -59,7 +59,7 @@ flowlines[['UpHydroseq', 'DnHydroseq', 'Hydroseq']] = flowlines[['UpHydroseq',
 flowlines = flowlines[flowlines['FTYPE']!= 'Coastline']  #filter out coastlines
 # %%
 # Choose the major river basin to Run
-run_name = 'Rio Grande'  #type river basin name
+run_name = 'Red'  #type river basin name
 #run name options
 # ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes', 
 #  'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
@@ -219,6 +219,7 @@ print("Fragments DCI to csv")
 
 # %% 
 # Plotting
+# segmentsGeo = pd.read_csv("Red_segGeo.csv") 
 # Upstream Storage
 # var = "Norm_stor_up"
 # segmentsGeo[var] = segments_up[var]
@@ -270,11 +271,11 @@ print("Fragments DCI to csv")
 #                  legend_kwds={'label': var, 'orientation': "horizontal"}, 
 #                  vmin=0, vmax=1)
 
-# #Fragment_Index
-# var = 'Frag_Index'
-# segmentsGeo[var] = segments[var]
-# segmentsGeo.plot(column=var, legend=True, cmap='viridis_r',
-#                  legend_kwds={'label': var, 'orientation': "horizontal"})
+#Fragment_Index
+var = 'Frag_Index'
+segmentsGeo[var] = segments[var]
+segmentsGeo.plot(column=var, legend=True, cmap='viridis_r',
+                 legend_kwds={'label': var, 'orientation': "horizontal"})
 
 # #Number of fragments upstream
 # var = 'upstream_count'
