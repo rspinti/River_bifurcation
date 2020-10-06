@@ -1,5 +1,5 @@
-#Extract csvs
 # %%
+#Extract csvs
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -53,9 +53,10 @@ flowlines = pd.read_csv(gdrive/"NHDPlusNationalData/NHDFlowlines.csv",
 #                                  'REACHCODE','LENGTHKM', 'StartFlag', 
 #                                  'FTYPE', 'COMID', 'WKT', 'QE_MA', 'QC_MA'])  #all NHD Flowlines
 #Filter the flowlines to select by HUC 2
-flowlines['REACHCODE'] = flowlines['REACHCODE']/(10**12) #convert Reachcode to HUC 2 format
-# flowlines['REACHCODE'] = flowlines['REACHCODE']/(10**10) #convert Reachcode to HUC 4 format
-flowlines['REACHCODE'] = flowlines['REACHCODE'].apply(np.floor) #round down to integer
+flowlines['HUC2'] = flowlines['REACHCODE']/(10**12) #convert Reachcode to HUC 2 format
+flowlines['HUC4'] = flowlines['REACHCODE']/(10**10) #convert Reachcode to HUC 4 format
+flowlines['HUC8'] = flowlines['REACHCODE']/(10**8) #convert Reachcode to HUC 4 format
+flowlines[['HUC2', 'HUC4', 'HUC8']] = flowlines[['HUC2', 'HUC4', 'HUC8']].apply(np.floor) #round down to integer
 #round the hydroseq values because of bug
 flowlines[['UpHydroseq', 'DnHydroseq', 'Hydroseq']] = flowlines[['UpHydroseq', 
                                                                      'DnHydroseq', 
@@ -65,19 +66,19 @@ flowlines[['UpHydroseq', 'DnHydroseq', 'Hydroseq']] = flowlines[['UpHydroseq',
 # %%
 # Read in data
 # basin_ls = ['Red']
-# basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
-# 'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
+basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
+'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
 
-basin_ls = ['Columbia']
+# basin_ls = ['Columbia']
 
 ## If the specified basin csv does not exist, extract it
 for basin in basin_ls:
     if os.path.isfile(basin+'.csv'):  #does it exist?
         #Read specified basin 
-        print(basin + ' Exists')
+        print(basin + ': Exists')
 
     else:
-        print(basin +  ' Does not exist')
+        print('\n'basin +  ': Does not exist')
         nabd_nhd = ex.join_dams_flowlines(flowlines, basin, nabd)
 
 # %%
