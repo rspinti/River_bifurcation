@@ -1,15 +1,13 @@
 # %%
 from pathlib import Path
-import pandas as pd
-import numpy as np
-import geopandas as gp
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-import bifurcate as bfc
-import datetime
+import pandas as pd, numpy as np, geopandas as gp, matplotlib.pyplot as plt,
+matplotlib as mpl, bifurcate as bfc, create_csvs as crc, datetime
 from shapely import wkt
 from pathlib import Path
 plt.style.use('classic')
+
+## folder on the GDrive to save output files to
+folder = 
 
 gdrive = Path("/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/Rachel/Research/GIS/Layers") #where shapefiles/csv live 
 
@@ -22,16 +20,21 @@ gdrive = Path("/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Proj
 #                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
 #                             'LENGTHKM', 'StartFlag', 'DamCount',
 #                             'Coordinates', 'DamID',  'QC_MA', 'Norm_stor'])
-
-basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
-'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
+## all the basins
+# basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
+# 'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
 
 ## w/o the Mississippi
-# basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
-# 'Gulf Coast', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
-
+basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
+'Gulf Coast', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
+## other
 # basin_ls = ['Columbia']
-## If the specified basin csv does not exist, extract it
+
+## Create the basin csvs
+crc.create_basin_csvs(basin_ls)   #if the specified basin csv does not exist, extract it
+
+
+#Run bifurcate analysis
 t_start = datetime.datetime.now()
 for basin in basin_ls:
     # Unit conversion  - convert flow and storage to cubic meters
@@ -42,7 +45,7 @@ for basin in basin_ls:
                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
                             'LENGTHKM', 'StartFlag', 'DamCount',
                             'Coordinates', 'DamID',  'QC_MA', 'Norm_stor',
-                            'REACHCODE', 'HUC2', 'HUC4', 'HUC8'])
+                            'HUC2', 'HUC4', 'HUC8', 'STREAMORDER'])
 
 
     segments.QC_MA = segments.QC_MA * 365 * 24 * 3600 * 0.0283168
@@ -249,6 +252,17 @@ for basin in basin_ls:
     t_end = datetime.datetime.now()
     print('Time to run all basins = ', t_end-t_start)
 
+## Create the combined csv
+crc.create_combined_csv(basin_ls, folder)
+
+## Read in 
+combo_segGeo = pd.read_csv('/Users/rachelspinti/Documents/River_bifurcation/all_basins_unfiltered_workflow/combined_segGeo.csv')
+
+agg_HUC2(combo_segGeo, folder)
+agg_HUC4(combo_segGeo, folder)
+agg_HUC8(combo_segGeo, folder)
+
+print('I ran successfully!')
 # %%
 # # Fixing the Seg Geo csv
 

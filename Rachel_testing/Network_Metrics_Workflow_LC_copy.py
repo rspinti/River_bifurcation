@@ -23,12 +23,14 @@ gdrive = Path("/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Proj
 #                             'LENGTHKM', 'StartFlag', 'DamCount',
 #                             'Coordinates', 'DamID',  'QC_MA', 'Norm_stor'])
 
-basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
-'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
+# basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
+# 'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
 
 ## w/o the Mississippi
 # basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
 # 'Gulf Coast', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
+basin_ls = ['extracted_HUC1019']
+
 ## If the specified basin csv does not exist, extract it
 for basin in basin_ls:
     # Unit conversion  - convert flow and storage to cubic meters
