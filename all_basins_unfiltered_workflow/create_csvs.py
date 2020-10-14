@@ -40,7 +40,7 @@ def create_basin_csvs(basin_ls):
                                 usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
                                         'REACHCODE','LENGTHKM', 'StartFlag', 
                                         'FTYPE', 'COMID', 'WKT', 'QE_MA', 'QC_MA',
-                                        'STREAMORDER'])  #all NHD Flowlines
+                                        'StreamOrde'])  #all NHD Flowlines
     
     #Filter the flowlines to select by HUC 2
     flowlines['HUC2'] = flowlines['REACHCODE']/(10**12) #convert Reachcode to HUC 2 format
