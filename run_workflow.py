@@ -34,7 +34,7 @@ basin_ls = ['Red']
 
 
 # Create the basin csvs
-crc.create_basin_csvs(basin_ls)   #if the specified basin csv does not exist, extract it
+crc.create_basin_csvs(basin_ls, gdrive, folder)   #if the specified basin csv does not exist, extract it
 
 
 # Run bifurcate analysis
@@ -236,9 +236,9 @@ crc.create_combined_csv(basin_ls, folder)
 ## Read in 
 combo_segGeo = pd.read_csv(gdrive+folder+'/combined_segGeo.csv')
 
-# abh.avg_HUC2(combo_segGeo, gdrive, folder)
-# abh.avg_HUC4(combo_segGeo, gdrive, folder)
-# abh.avg_HUC8(combo_segGeo, gdrive, folder)
+abh.avg_HUC2(combo_segGeo, gdrive, folder)
+abh.avg_HUC4(combo_segGeo, gdrive, folder)
+abh.avg_HUC8(combo_segGeo, gdrive, folder)
 
 print('I ran successfully!')
 
