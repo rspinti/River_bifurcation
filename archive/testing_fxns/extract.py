@@ -3,7 +3,7 @@ import numpy as np, pandas as pd
 from time import time
 
 
-def join_dams_flowlines(flowlines, run_name, nabd):
+def join_dams_flowlines(run_name, flowlines, nabd):
     """Join the dams and flowlines with COMID to create a new dataset.
 
     This function obtains and filters NHDPlus V2 and NABD for analysis in 
