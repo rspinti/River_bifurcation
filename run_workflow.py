@@ -4,7 +4,6 @@ This script runs the entire river bifurcation workflow.
 Created by: Laura Condon and Rachel Spinti
 """
 # %%
-from pathlib import Path
 import pandas as pd, numpy as np, geopandas as gp, matplotlib.pyplot as plt
 import datetime, matplotlib as mpl
 import bifurcate as bfc, create_csvs as crc, average_by_HUC as abh
@@ -32,28 +31,26 @@ gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/
 # basin_ls = ['Columbia']
 basin_ls = ['Red']
 
-
+# %%
 # Create the basin csvs
 crc.create_basin_csvs(basin_ls, gdrive, folder)   #if the specified basin csv does not exist, extract it
 
 
 # Run bifurcate analysis
 t_start = datetime.datetime.now()
-for basin in basin_ls:
-    # Unit conversion  - convert flow and storage to cubic meters
-    # QC_MA = Average flow in cfs 
-    # Norm_stor =  normal storage in acre feet 
 
+for basin in basin_ls:
     segments = pd.read_csv(gdrive + folder + basin + ".csv", index_col='Hydroseq',
                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
                             'LENGTHKM', 'StartFlag', 'DamCount',
                             'Coordinates', 'DamID',  'QC_MA', 'Norm_stor',
                             'HUC2', 'HUC4', 'HUC8', 'StreamOrde'])
 
-
+    # Unit conversion  - convert flow and storage to cubic meters
+    # QC_MA = Average flow in cfs 
+    # Norm_stor =  normal storage in acre feet 
     segments.QC_MA = segments.QC_MA * 365 * 24 * 3600 * 0.0283168
     segments.Norm_stor = segments.Norm_stor * 1233.48
-
 
     # Make a geo dataframe for plotting
     segmentsGeo = segments.copy()
@@ -66,8 +63,8 @@ for basin in basin_ls:
     # 1. Aggregate segment values by upstream area
     # Aggregate upstream storage, number of dams, and upstream length for every segment
     t0 = datetime.datetime.now()
-    segments_up = bfc.upstream_ag(
-        data=segments, downIDs='DnHydroseq', agg_value=['Norm_stor', 'DamCount', 'LENGTHKM', 'QC_MA'])
+    segments_up = bfc.upstream_ag(data=segments, downIDs='DnHydroseq', 
+                                agg_value=['Norm_stor', 'DamCount', 'LENGTHKM', 'QC_MA'])
     t1 = datetime.datetime.now()
     print("Aggregate by Upstream segments:", (t1-t0))
 
@@ -92,7 +89,7 @@ for basin in basin_ls:
     # Weighted average of degree of regulation 
     # sum(DOR * segment flow/(sum of all upstream segment flow))
 
-    #First multiple DOR * the segment flow/total of all upstream segements flow
+    #First multiple DOR * the segment flow/total of all upstream segments flow
     segments_up['DOR_scaler'] = segments_up.DOR * segments_up.QC_MA 
     t0 = datetime.datetime.now()
     RRI_temp = bfc.upstream_ag(
@@ -144,7 +141,7 @@ for basin in basin_ls:
     t1 = datetime.datetime.now()
     print("Aggregate by Upstream fragments:", (t1-t0))
 
-    ##  Calculating segement dcis but NOTE:
+    ##  Calculating segment dcis but NOTE:
     ## This  number will only be correct at the end of fragments
     ## Upstream from there you need additional logic to figure out
     ## which fragments are actually upstream from a given segment

@@ -18,21 +18,20 @@ def create_basin_csvs(basin_ls, gdrive, folder):
     """   
     ## If the specified basin csv does not exist, extract it
     os.chdir(gdrive+folder)
-
     read_flag = False
+
     for basin in basin_ls:
         if os.path.isfile(basin+'.csv'):  #does it exist?
             #Read specified basin 
             print(basin + ': Exists')
 
         else:
-            print('\n', basin +  ': Does not exist')
             if read_flag == False:
                 flowlines, dams = read.read_lines_dams(gdrive)
                 read_flag = True
+            print('\n', basin +  ': Does not exist')
             nabd_nhd = ex.join_dams_flowlines(basin, flowlines, dams)
-            # else:
-            #     nabd_nhd = ex.join_dams_flowlines(basin, flowlines, dams)
+            
 
 def create_combined_csv(basin_ls, folder):
     """Creates combined csv of all flowlines.
