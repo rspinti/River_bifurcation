@@ -4,10 +4,19 @@ def read_lines_dams(gdrive):
     # Read in data
     t0 = datetime.datetime.now()
     ## NABD
-    nabd_dams = gp.read_file(gdrive+"nabd/nabd_fish_barriers_2012.shp", 
-                            usecols=['COMID', 'NIDID', 'Norm_stor', 'Max_stor', 
-                                    'Year_compl', 'Purposes', 'geometry'])  #read in NABD from Drive
-    nabd_dams = nabd_dams.drop_duplicates(subset='NIDID', keep="first")  #drop everything after first duplicate
+    nabd_dams = gp.read_file(gdrive+"nabd/nabd_fish_barriers_2012.shp")  #read in NABD from Drive
+#     nabd_dams = pd.DataFrame(nabd_dams)
+#     nabd_dams = nabd_dams[['COMID', 'NIDID', 'Norm_stor', 'Max_stor', 'Year_compl', 'Purposes', 'Dam_name', 'geometry']]
+#     nabd_dams = nabd_dams.drop_duplicates(subset='NIDID', keep="first").reset_index(drop=True)   #drop everything after first duplicate
+
+    #Updating the NIDIDs that are wrong
+
+    #Adding the large dams that were missing 
+    dams_adding = pd.read_csv('/Users/rachelspinti/Documents/River_bifurcation/dams_to_add_sjoin.csv', usecols=['join_COMID', 'NIDID', 'Norm_stor', 'Max_stor', 'Year_compl', 'Purposes', 'WKT'])
+    dams_adding = dams_adding.rename(columns = {'join_COMID':'COMID', 'WKT':'geometry'})
+    nabd_dams = nabd_dams.append(dams_adding)
+
+    #Add things to NABD
     nabd_dams["DamID"] = range(len(nabd_dams.COMID))  #add DamID 
     nabd_dams = pd.DataFrame(nabd_dams)
     nabd_dams['Grand_flag'] = np.zeros(len(nabd_dams))  #add flag column
@@ -39,7 +48,7 @@ def read_lines_dams(gdrive):
     #Filter the flowlines to select by HUC 2
     flowlines['HUC2'] = flowlines['REACHCODE']/(10**12) #convert Reachcode to HUC 2 format
     flowlines['HUC4'] = flowlines['REACHCODE']/(10**10) #convert Reachcode to HUC 4 format
-    flowlines['HUC8'] = flowlines['REACHCODE']/(10**6) #convert Reachcode to HUC 4 format
+    flowlines['HUC8'] = flowlines['REACHCODE']/(10**6) #convert Reachcode to HUC 8 format
     flowlines[['HUC2', 'HUC4', 'HUC8']] = flowlines[['HUC2', 'HUC4', 'HUC8']].apply(np.floor) #round down to integer
 
     #round the hydroseq values because of bug

@@ -20,8 +20,8 @@ gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/
 # Read in data
 
 ##all the basins
-# basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
-# 'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
+basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
+'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
 
 ##w/o the Mississippi
 # basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
@@ -29,7 +29,7 @@ gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/
 
 ##other
 # basin_ls = ['Columbia']
-basin_ls = ['Red']
+# basin_ls = ['Red']
 
 # %%
 # Create the basin csvs

@@ -1,57 +1,57 @@
+"""
+This script runs the entire river bifurcation workflow.
+
+Created by: Laura Condon and Rachel Spinti
+"""
 # %%
-from pathlib import Path
-import pandas as pd, numpy as np, geopandas as gp, matplotlib.pyplot as plt,
-matplotlib as mpl, bifurcate as bfc, create_csvs as crc, datetime
+import pandas as pd, numpy as np, geopandas as gp, matplotlib.pyplot as plt
+import datetime, matplotlib as mpl
+import bifurcate as bfc, create_csvs as crc, average_by_HUC as abh
 from shapely import wkt
 from pathlib import Path
 plt.style.use('classic')
 
-## folder on the GDrive to save output files to
-folder = 
+##folder on the GDrive to save output files to
+folder = 'all_basins_unfiltered/'
 
-gdrive = Path("/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/Rachel/Research/GIS/Layers") #where shapefiles/csv live 
+gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/Rachel/Research/Data/bifurcation_data_repo/" #where shapefiles/csv live 
 
 # %%
-# # Read input data
-# # "small1019.csv"
-# # "extracted_HUC1019.csv"
-# # "Red.csv"
-# segments = pd.read_csv("Red.csv", index_col='Hydroseq',
-#                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
-#                             'LENGTHKM', 'StartFlag', 'DamCount',
-#                             'Coordinates', 'DamID',  'QC_MA', 'Norm_stor'])
-## all the basins
+# Read in data
+
+##all the basins
 # basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
 # 'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
 
-## w/o the Mississippi
-basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
-'Gulf Coast', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
-## other
+##w/o the Mississippi
+# basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
+# 'Gulf Coast', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
+
+##other
 # basin_ls = ['Columbia']
+# basin_ls = ['Red']
+basin_ls = ['Mississippi', 'South Atlantic']
 
-## Create the basin csvs
-crc.create_basin_csvs(basin_ls)   #if the specified basin csv does not exist, extract it
+# %%
+# Create the basin csvs
+crc.create_basin_csvs(basin_ls, gdrive, folder)   #if the specified basin csv does not exist, extract it
 
 
-#Run bifurcate analysis
+# Run bifurcate analysis
 t_start = datetime.datetime.now()
-for basin in basin_ls:
-    # Unit conversion  - convert flow and storage to cubic meters
-    # QC_MA = Average flow in cfs 
-    # Norm_stor =  normal storage in acre feet 
 
-    segments = pd.read_csv(basin+".csv", index_col='Hydroseq',
+for basin in basin_ls:
+    segments = pd.read_csv(gdrive + folder + basin + ".csv", index_col='Hydroseq',
                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
                             'LENGTHKM', 'StartFlag', 'DamCount',
                             'Coordinates', 'DamID',  'QC_MA', 'Norm_stor',
-                            'HUC2', 'HUC4', 'HUC8', 'STREAMORDER'])
+                            'HUC2', 'HUC4', 'HUC8', 'StreamOrde'])
 
-
+    # Unit conversion  - convert flow and storage to cubic meters
+    # QC_MA = Average flow in cfs 
+    # Norm_stor =  normal storage in acre feet 
     segments.QC_MA = segments.QC_MA * 365 * 24 * 3600 * 0.0283168
     segments.Norm_stor = segments.Norm_stor * 1233.48
-
-
 
     # Make a geo dataframe for plotting
     segmentsGeo = segments.copy()
@@ -64,8 +64,8 @@ for basin in basin_ls:
     # 1. Aggregate segment values by upstream area
     # Aggregate upstream storage, number of dams, and upstream length for every segment
     t0 = datetime.datetime.now()
-    segments_up = bfc.upstream_ag(
-        data=segments, downIDs='DnHydroseq', agg_value=['Norm_stor', 'DamCount', 'LENGTHKM', 'QC_MA'])
+    segments_up = bfc.upstream_ag(data=segments, downIDs='DnHydroseq', 
+                                agg_value=['Norm_stor', 'DamCount', 'LENGTHKM', 'QC_MA'])
     t1 = datetime.datetime.now()
     print("Aggregate by Upstream segments:", (t1-t0))
 
@@ -90,7 +90,7 @@ for basin in basin_ls:
     # Weighted average of degree of regulation 
     # sum(DOR * segment flow/(sum of all upstream segment flow))
 
-    #First multiple DOR * the segment flow/total of all upstream segements flow
+    #First multiple DOR * the segment flow/total of all upstream segments flow
     segments_up['DOR_scaler'] = segments_up.DOR * segments_up.QC_MA 
     t0 = datetime.datetime.now()
     RRI_temp = bfc.upstream_ag(
@@ -142,7 +142,7 @@ for basin in basin_ls:
     t1 = datetime.datetime.now()
     print("Aggregate by Upstream fragments:", (t1-t0))
 
-    ##  Calculating segement dcis but NOTE:
+    ##  Calculating segment dcis but NOTE:
     ## This  number will only be correct at the end of fragments
     ## Upstream from there you need additional logic to figure out
     ## which fragments are actually upstream from a given segment
@@ -167,34 +167,22 @@ for basin in basin_ls:
     print(basin + " Fragments DCI to csv")
 
 
-
-    # Plotting
+    #Adding things to segGeo
     # Upstream Storage
     var = "Norm_stor_up"
     segmentsGeo[var] = segments_up[var]
-    # segmentsGeo.plot(column=var, legend=True, cmap='viridis_r',
-    #                  legend_kwds={'label': var, 'orientation': "horizontal"})
 
     # Number of upstream segments
     var = "upstream_count"
     segmentsGeo[var] = segments_up[var]
-    # segmentsGeo.plot(column=var, legend=True, cmap='viridis_r',
-    #                  legend_kwds={'label': var, 'orientation': "horizontal"},
-    #               vmin=1, vmax=500)
 
     #Length Upstream 
     var = "LENGTHKM_up"
     segmentsGeo[var] = segments_up[var]
-    # segmentsGeo.plot(column=var, legend=True, cmap='viridis_r',
-    #                  legend_kwds={'label': var, 'orientation': "horizontal"})
-
 
     #Number of dams upstream 
     var = "DamCount_up"
     segmentsGeo[var] = segments_up[var]
-    # segmentsGeo.plot(column=var, legend=True, cmap='viridis_r',
-    #                  legend_kwds={'label': var, 'orientation': "horizontal"},
-    #                 vmin=0, vmax=10)
 
     #Number of dams 
     # var = "DamCount"
@@ -209,112 +197,47 @@ for basin in basin_ls:
     #Degree of Regulation
     var = "DOR"
     segmentsGeo[var] = segments_up[var]
-    # segmentsGeo.plot(column=var, legend=True, cmap='viridis_r',
-    #                  legend_kwds={'label': var, 'orientation': "horizontal"},
-    #                  vmin=0, vmax=1)
 
     #RRI
     var='RRI'
     segmentsGeo[var] = RRI
-    # segmentsGeo.plot(column=var, legend=True, cmap='viridis_r',
-    #                  legend_kwds={'label': var, 'orientation': "horizontal"}, 
-    #                  vmin=0, vmax=1)
 
     #Fragment_Index
     var = 'Frag_Index'
     segmentsGeo[var] = segments[var]
-    # segmentsGeo.plot(column=var, legend=True, cmap='viridis_r',
-    #                 legend_kwds={'label': var, 'orientation': "horizontal"})
 
     #Number of fragments upstream
     var = 'upstream_count'
     segmentsGeo[var] = segments_dci[var]
-    # segmentsGeo.plot(column=var, legend=True, cmap='viridis_r',
-    #                  legend_kwds={'label': var, 'orientation': "horizontal"},
-    #                  vmin=0, vmax=4)
 
     #Average fragment length upstream
     var = 'avg_LengthUp'
     segmentsGeo[var] = segments_dci['LENGTHKM_up'] / segments_dci['upstream_count']
-    # segmentsGeo.plot(column=var, legend=True, cmap='viridis_r',
-    #                  legend_kwds={'label': var, 'orientation': "horizontal"})
 
     #dci
     var = 'dci'
     segmentsGeo[var] = segments_dci[var]
-    # segmentsGeo.plot(column=var, legend=True, cmap='viridis_r',
-    #                  legend_kwds={'label': var, 'orientation': "horizontal"},
-    #                  vmin=0, vmax=0.1)
 
+    ##Create segGeo csv for each basin to plot in QGIS
     segmentsGeo.to_csv(basin + '_segGeo.csv')
-    # segmentsGeo.to_csv('extracted1019_segGeo.csv')
 
-    t_end = datetime.datetime.now()
-    print('Time to run all basins = ', t_end-t_start)
 
+## Time to run all basins in basin_ls
+t_end = datetime.datetime.now()
+print('Time to run all basins = ', t_end-t_start)
+
+# %%
 ## Create the combined csv
 crc.create_combined_csv(basin_ls, folder)
+# crc.create_combined_csv(basin_ls)
 
 ## Read in 
-combo_segGeo = pd.read_csv('/Users/rachelspinti/Documents/River_bifurcation/all_basins_unfiltered_workflow/combined_segGeo.csv')
+combo_segGeo = pd.read_csv(gdrive+folder+'/combined_segGeo.csv')
 
-agg_HUC2(combo_segGeo, folder)
-agg_HUC4(combo_segGeo, folder)
-agg_HUC8(combo_segGeo, folder)
+abh.avg_HUC2(combo_segGeo, gdrive, folder)
+abh.avg_HUC4(combo_segGeo, gdrive, folder)
+abh.avg_HUC8(combo_segGeo, gdrive, folder)
 
 print('I ran successfully!')
-# %%
-# # Fixing the Seg Geo csv
-
-# ## w/o the Mississippi
-# basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
-# 'Gulf Coast', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
-# ## If the specified basin csv does not exist, extract it
-# for basin in basin_ls:
-#     segments = pd.read_csv(basin+"_segGeo.csv")
-#     segments_up = pd.read_csv(basin+"_segments_up.csv")
-#     segmentsGeo = segments.copy()
-#     fragments_dci = pd.read_csv(basin+"_fragments_dci.csv")
-#     fragments = pd.read_csv(basin+"_fragments.csv")
-#     segments2 = segments.merge(fragments, how='left', left_on='Frag_Index',
-#                                 right_index=True, suffixes=('_seg', '_frag'))
-#     segments_dci = segments2.merge(fragments_dci, how='left', left_on='Frag',
-#                                 right_index=True, suffixes=('_seg', '_frag'))
-
-#     #Storage upstream
-#     var = "Norm_stor_up"
-#     segmentsGeo[var] = segments_up[var]
-
-#     #Upstream count
-#     var = "upstream_count"
-#     segmentsGeo[var] = segments_up[var]
-
-#     #Length Upstream 
-#     var = "LENGTHKM_up"
-#     segmentsGeo[var] = segments_up[var]
-        
-#     #Number of dams upstream 
-#     var = "DamCount_up"
-#     segmentsGeo[var] = segments_up[var]
-
-#     #Degree of Regulation
-#     var = "DOR"
-#     segmentsGeo[var] = segments_up[var]
-
-#     #Number of fragments upstream
-#     var = 'upstream_count'
-#     segmentsGeo[var] = segments_dci[var]
-
-#     # #Average fragment length upstream
-#     var = 'avg_LengthUp'
-#     segmentsGeo[var] = segments_dci['LENGTHKM_up'] / segments_dci['upstream_count']
-
-#     #dci
-#     var = 'dci'
-#     segmentsGeo[var] = segments_dci[var]
-
-#     # segmentsGeo to csv
-#     segmentsGeo.to_csv(basin + '_segGeo.csv')
-#     # segmentsGeo.to_csv('extracted1019_segGeo.csv')
 
 # %%

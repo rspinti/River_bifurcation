@@ -3,7 +3,7 @@ import numpy as np, pandas as pd
 from time import time
 
 
-def join_dams_flowlines(flowlines, run_name, nabd):
+def join_dams_flowlines(run_name, flowlines, nabd):
     """Join the dams and flowlines with COMID to create a new dataset.
 
     This function obtains and filters NHDPlus V2 and NABD for analysis in 
@@ -176,13 +176,24 @@ def join_dams_flowlines(flowlines, run_name, nabd):
                     'South Atlantic' : [3]}
     # print(major_basins)
     
-    
+    # Read in dams to be added
+    # add_dams = pd.read_csv('/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/Rachel/Research/Data/bifurcation_data_repo/other_dam_datasets/')
+# 'COMID', 'NIDID', 'Norm_stor', 'Max_stor', 
+#                                     'Year_compl', 'Purposes', 'geometry'
+# 'Hydroseq', 'UpHydroseq', 'DnHydroseq',
+#                                         'REACHCODE','LENGTHKM', 'StartFlag', 
+#                                         'FTYPE', 'COMID', 'WKT', 'QE_MA', 'QC_MA',
+#                                         'StreamOrde'
+
     # Based on the run_name, a different basin will be selected
     t1 = time()
     if run_name == 'California':
         #create dataframe with California flowlines
         california = flowlines.loc[(flowlines['HUC2'] == major_basins[run_name][0])] 
         nabd_nhd_join = nabd.merge(california, how= 'right', on='COMID') # Merge NABD and California
+
+        # california2 = add_dams.loc[(add_dams['HUC2'] == major_basins[run_name][0])]
+        # nabd_nhd_join.append(california2)
     
     if run_name == 'Colorado':
         #create dataframe with Colorado flowlines

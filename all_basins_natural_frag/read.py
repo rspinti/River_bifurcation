@@ -13,10 +13,11 @@ def read_lines_dams(gdrive):
         # nabd_dams['Grand_flag'] = np.zeros(len(nabd_dams))  #add flag column
 
         nabd = nabd_dams.copy()
-        nabd = nabd.drop(columns=['COMID'])
+        nabd = nabd.drop(columns=['COMID', 'geometry'])
         for col in nabd.columns:
-                nabd_dams[col].values[:] = 0
-        nabd['COMID'] = nabd_dams["COMID"]
+                nabd[col].values[:] = 0
+        nabd['COMID'] = nabd_dams['COMID']
+        nabd['geometry'] = nabd_dams['geometry']
 
 #     ## GRanD
 #     grand = pd.read_csv(gdrive+"other_dam_datasets/Reservoir_Attributes.csv", 
