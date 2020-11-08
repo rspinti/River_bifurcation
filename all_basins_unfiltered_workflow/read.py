@@ -1,4 +1,4 @@
-import pandas as pd, numpy as np, geopandas as gp, datetime
+import pandas as pd, numpy as np, geopandas as gp, datetime, os
 
 def read_lines_dams(gdrive):
     # Read in data
@@ -15,6 +15,19 @@ def read_lines_dams(gdrive):
     dams_adding = pd.read_csv('/Users/rachelspinti/Documents/River_bifurcation/dams_to_add_sjoin.csv', usecols=['join_COMID', 'NIDID', 'Norm_stor', 'Max_stor', 'Year_compl', 'Purposes', 'WKT'])
     dams_adding = dams_adding.rename(columns = {'join_COMID':'COMID', 'WKT':'geometry'})
     nabd_dams = nabd_dams.append(dams_adding)
+
+   #Create new NABD shapefile w/ adding dams
+   os.chdir(gdrive+'nabd')
+   read_flag = False
+   if os.path.isfile('nabd_updated.csv'):  #does it exist? 
+         print( 'nabd_updated exists')
+
+   else:
+      if read_flag == False:
+         nabd_dams.to_file(gdrive+'nabd/nabd_updated.shp')
+         read_flag = True
+         print('\n', 'nabd_updated does not exist')
+    
 
     #Add things to NABD
     nabd_dams["DamID"] = range(len(nabd_dams.COMID))  #add DamID 

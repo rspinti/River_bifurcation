@@ -29,8 +29,8 @@ gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/
 
 ##other
 # basin_ls = ['Columbia']
-# basin_ls = ['Red']
-basin_ls = ['Mississippi', 'South Atlantic']
+basin_ls = ['Red']
+# basin_ls = ['Mississippi', 'South Atlantic']
 
 # %%
 # Create the basin csvs
@@ -52,6 +52,8 @@ for basin in basin_ls:
     # Norm_stor =  normal storage in acre feet 
     segments.QC_MA = segments.QC_MA * 365 * 24 * 3600 * 0.0283168
     segments.Norm_stor = segments.Norm_stor * 1233.48
+    # segments.to_csv(basin + '_segments.csv')
+    # print(basin + "Segments to csv")
 
     # Make a geo dataframe for plotting
     segmentsGeo = segments.copy()
@@ -109,13 +111,22 @@ for basin in basin_ls:
 
 
 
-    # 3. divide into fragments and get average fragment properties
-    # Create fragments 
+    # 3a. divide into fragments and get average fragment properties
     t1 = datetime.datetime.now()
-    segments = bfc.make_fragments(
-        segments, exit_id=52000, verbose=False, subwatershed=True)
+
+    # update the exit_id for each run
+    if basin == 'California':
+        exit_id = 999000
+    else:
+        exit_id = exit_id*10**4
+
+    # Create fragments 
+    segments = bfc.make_fragments(segments, exit_id=exit_id, verbose=False, 
+        subwatershed=True)
     t2 = datetime.datetime.now()
     print("Make Fragments:", (t2-t1))
+    segments.to_csv(basin + '_segments.csv')
+    print(basin + "Segments to csv")
 
     # Summarize basic fragment properites
     fragments = bfc.agg_by_frag(segments)
@@ -123,6 +134,8 @@ for basin in basin_ls:
     # Export fragments to csv in case of failure
     fragments.to_csv(basin + '_fragments.csv')
     print(basin + " Fragments to csv")
+
+    # 3b. aggregate fragment values by HUC
 
 
 
@@ -232,8 +245,12 @@ crc.create_combined_csv(basin_ls, folder)
 # crc.create_combined_csv(basin_ls)
 
 ## Read in 
-combo_segGeo = pd.read_csv(gdrive+folder+'/combined_segGeo.csv')
+# combo_segGeo = pd.read_csv(gdrive+folder+'/combined_segGeo.csv') #segGeo
+combo_frag = pd.read_csv(gdrive+folder+'/combined_frag.csv') #fragments
 
+# abh.avg_HUC2(combo_segGeo, gdrive, folder)
+# abh.avg_HUC4(combo_segGeo, gdrive, folder)
+# abh.avg_HUC8(combo_segGeo, gdrive, folder)
 abh.avg_HUC2(combo_segGeo, gdrive, folder)
 abh.avg_HUC4(combo_segGeo, gdrive, folder)
 abh.avg_HUC8(combo_segGeo, gdrive, folder)

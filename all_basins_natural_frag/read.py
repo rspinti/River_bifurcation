@@ -46,7 +46,7 @@ def read_lines_dams(gdrive):
         #Filter the flowlines to select by HUC 2
         flowlines['HUC2'] = flowlines['REACHCODE']/(10**12) #convert Reachcode to HUC 2 format
         flowlines['HUC4'] = flowlines['REACHCODE']/(10**10) #convert Reachcode to HUC 4 format
-        flowlines['HUC8'] = flowlines['REACHCODE']/(10**8) #convert Reachcode to HUC 4 format
+        flowlines['HUC8'] = flowlines['REACHCODE']/(10**6) #convert Reachcode to HUC 4 format
         flowlines[['HUC2', 'HUC4', 'HUC8']] = flowlines[['HUC2', 'HUC4', 'HUC8']].apply(np.floor) #round down to integer
 
         #round the hydroseq values because of bug

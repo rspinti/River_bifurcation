@@ -195,6 +195,9 @@ def agg_by_frag(segments):
 
     #Gettting the # of dams on a segment
 
+    #Obtain HUCs in the fragment df
+    segments_filtered = segments[['Frag','HUC2','HUC4']]
+    fragments = fragments.merge(segments_filtered, on = 'Frag', how, 'left')
 
     return fragments
 
