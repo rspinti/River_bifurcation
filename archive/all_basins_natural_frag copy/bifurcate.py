@@ -161,8 +161,7 @@ def agg_by_frag(segments):
     # Fill in fragment information
     # Total fragment length calculated using a pivot table from segment lengths
     #fragments0 = segments.pivot_table('LENGTHKM', index='Frag', aggfunc=sum)
-    # fragments0 = segments.pivot_table(values=['LENGTHKM', 'DamCount', 'Norm_stor'], index='Frag', aggfunc=sum)
-    fragments0 = segments.pivot_table(values=['LENGTHKM', 'DamCount', 'Norm_stor', 'HUC4'], index='Frag', aggfunc={'LENGTHKM' : np.sum, 'DamCount' : np.sum, 'Norm_stor' : np.sum, 'HUC4': np.median})
+    fragments0 = segments.pivot_table(values=['LENGTHKM', 'DamCount', 'Norm_stor'], index='Frag', aggfunc=sum)
 
     # Add in the fragment index
     fragments0 = fragments0.join(segments.pivot_table(values=['Frag_Index'], index='Frag', aggfunc=min))
@@ -196,9 +195,6 @@ def agg_by_frag(segments):
 
     #Gettting the # of dams on a segment
 
-    #Obtain HUCs in the fragment df
-    # segments_filtered = segments[['Frag','HUC2','HUC4']]
-    # fragments = fragments.merge(segments_filtered, on = 'Frag', how= 'right')
 
     return fragments
 

@@ -20,8 +20,7 @@ gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/
 # Read in data
 
 ##all the basins
-# basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
-# 'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
+basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes','Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
 
 ##w/o the Mississippi
 # basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
@@ -29,7 +28,7 @@ gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/
 
 ##other
 # basin_ls = ['Columbia']
-basin_ls = ['Red']
+# basin_ls = ['Red']
 # basin_ls = ['Mississippi', 'South Atlantic']
 
 # %%
@@ -41,6 +40,7 @@ crc.create_basin_csvs(basin_ls, gdrive, folder)   #if the specified basin csv do
 t_start = datetime.datetime.now()
 
 for basin in basin_ls:
+    print(basin)
     segments = pd.read_csv(gdrive + folder + basin + ".csv", index_col='Hydroseq',
                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
                             'LENGTHKM', 'StartFlag', 'DamCount',
@@ -115,6 +115,7 @@ for basin in basin_ls:
     t1 = datetime.datetime.now()
 
     # update the exit_id for each run
+    exit_id = 999000
     if basin == 'California':
         exit_id = 999000
     else:
@@ -135,9 +136,6 @@ for basin in basin_ls:
     fragments.to_csv(basin + '_fragments.csv')
     print(basin + " Fragments to csv")
 
-    # 3b. aggregate fragment values by HUC
-
-
 
     # 4. Caculate the dci - actually I think this is DOF 
     # because I'm  doing it with Length for now?
@@ -148,7 +146,7 @@ for basin in basin_ls:
     # aggregate l2 by upstream 
     t0 = datetime.datetime.now()
     fragments_dci = bfc.upstream_ag(
-        data=fragments, downIDs='FragDn', agg_value=['LENGTHKM_sq', 'LENGTHKM'])
+        data=fragments, downIDs='FragDn', agg_value=['LENGTHKM_sq', 'LENGTHKM', 'Norm_stor', 'DamCount', 'QC_MA'])
     #sum of upstream square fragment length excluding current fragment
     fragments_dci['LENGTHKM_sq_upexclude'] = fragments_dci['LENGTHKM_sq_up'] - \
                                             fragments_dci['LENGTHKM_sq']
@@ -172,12 +170,27 @@ for basin in basin_ls:
         (fragments_dci['LENGTHKM_up'] ** 2)
     segments_dci = segments.merge(fragments_dci, how='left', left_on='Frag',
                             right_index=True, suffixes=('_seg', '_frag'))
+
+    # Calculate Degree of Regulation 
+    fragments_dci['QC_MA'] = fragments.QC_MA
+    fragments_dci['DOR'] = fragments_dci.Norm_stor_up /  \
+        fragments.QC_MA 
+
+    #Give a value of -1 to locations where QC_MA is 0 and storage is positive
+    fragments_dci.DOR[(fragments_dci['QC_MA'] == 0) & (fragments_dci['Norm_stor_up'] >0)] = -1
+
+    # Give a value of 0 to anywhere that Norm_stor_up is 0 (results in NAs when norm stor up is 0 and q is 0)
+    fragments_dci.DOR[fragments_dci['Norm_stor_up'] == 0] = 0
     
     # Export DCI to csv in case of failure
     segments_dci.to_csv(basin + '_segments_dci.csv')
     print(basin + " Segments DCI to csv")
     fragments_dci.to_csv(basin + '_fragments_dci.csv')
     print(basin + " Fragments DCI to csv")
+
+    
+
+
 
 
     #Adding things to segGeo
@@ -251,10 +264,12 @@ combo_frag = pd.read_csv(gdrive+folder+'/combined_frag.csv') #fragments
 # abh.avg_HUC2(combo_segGeo, gdrive, folder)
 # abh.avg_HUC4(combo_segGeo, gdrive, folder)
 # abh.avg_HUC8(combo_segGeo, gdrive, folder)
-abh.avg_HUC2(combo_segGeo, gdrive, folder)
-abh.avg_HUC4(combo_segGeo, gdrive, folder)
-abh.avg_HUC8(combo_segGeo, gdrive, folder)
+abh.agg_HUC2(combo_frag, gdrive, folder)
+abh.agg_HUC4(combo_frag, gdrive, folder)
+abh.agg_HUC8(combo_frag, gdrive, folder)
 
 print('I ran successfully!')
+
+# %%
 
 # %%

@@ -1,13 +1,14 @@
-import pandas as pd, numpy as np, geopandas as gp, datetime, os
+import pandas as pd, numpy as np, geopandas as gp 
+import datetime, os
 
 def read_lines_dams(gdrive):
     # Read in data
     t0 = datetime.datetime.now()
     ## NABD
     nabd_dams = gp.read_file(gdrive+"nabd/nabd_fish_barriers_2012.shp")  #read in NABD from Drive
-#     nabd_dams = pd.DataFrame(nabd_dams)
-#     nabd_dams = nabd_dams[['COMID', 'NIDID', 'Norm_stor', 'Max_stor', 'Year_compl', 'Purposes', 'Dam_name', 'geometry']]
-#     nabd_dams = nabd_dams.drop_duplicates(subset='NIDID', keep="first").reset_index(drop=True)   #drop everything after first duplicate
+    nabd_dams = pd.DataFrame(nabd_dams)
+    nabd_dams = nabd_dams[['COMID', 'NIDID', 'Norm_stor', 'Max_stor', 'Year_compl', 'Purposes', 'Dam_name', 'geometry']]
+    nabd_dams = nabd_dams.drop_duplicates(subset='NIDID', keep="first").reset_index(drop=True)   #drop everything after first duplicate
 
     #Updating the NIDIDs that are wrong
 
@@ -16,17 +17,17 @@ def read_lines_dams(gdrive):
     dams_adding = dams_adding.rename(columns = {'join_COMID':'COMID', 'WKT':'geometry'})
     nabd_dams = nabd_dams.append(dams_adding)
 
-   #Create new NABD shapefile w/ adding dams
-   os.chdir(gdrive+'nabd')
-   read_flag = False
-   if os.path.isfile('nabd_updated.csv'):  #does it exist? 
-         print( 'nabd_updated exists')
+    #Create new NABD shapefile w/ adding dams
+    # os.chdir(gdrive+'nabd')
+    # read_flag = False
+    # if os.path.isfile('nabd_updated.csv'):  #does it exist? 
+    #     print( 'nabd_updated exists')
 
-   else:
-      if read_flag == False:
-         nabd_dams.to_file(gdrive+'nabd/nabd_updated.shp')
-         read_flag = True
-         print('\n', 'nabd_updated does not exist')
+    # else:
+    #     if read_flag == False:
+    #         nabd_dams.to_file(gdrive+'nabd/nabd_updated.shp')
+    #         read_flag = True
+    #         print('\n', 'nabd_updated does not exist')
     
 
     #Add things to NABD
