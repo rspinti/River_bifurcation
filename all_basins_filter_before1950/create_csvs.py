@@ -56,18 +56,31 @@ def create_combined_csv(basin_ls, folder):
     # combined_csv.to_csv("combined_flowlines.csv", index=False, encoding='utf-8-sig')
 
 
-    # Seg Geos
+    # # Seg Geos
+    # extension = '_segGeo.csv'
+    # all_segGeos = [i+extension for i in basin_ls]
+    # # all_segGeos
+
+    # #combine all files in the list
+    # combined_csv = pd.concat([pd.read_csv(f) for f in all_segGeos])
+
+    # #export to csv
+    # combined_csv.to_csv("combined_segGeo.csv", index=False, encoding='utf-8-sig')
+
+    
+    # Seg DCI
     extension = '_segments_dci.csv'
-    all_segGeos = [i+extension for i in basin_ls]
+    all_segdci = [i+extension for i in basin_ls]
     # all_segGeos
 
     #combine all files in the list
-    combined_csv = pd.concat([pd.read_csv(f) for f in all_segGeos])
+    combined_csv = pd.concat([pd.read_csv(f) for f in all_segdci])
 
     #export to csv
     combined_csv.to_csv("combined_seg_dci.csv", index=False, encoding='utf-8-sig')
 
-    # # Fragments
+    
+    # Fragments
     # extension = '_fragments.csv'
     # all_frags = [i+extension for i in basin_ls]
     # # all_segGeos

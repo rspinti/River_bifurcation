@@ -12,7 +12,7 @@ from pathlib import Path
 plt.style.use('classic')
 
 ##folder on the GDrive to save output files to
-folder = 'all_basins_unfiltered/'
+folder = 'all_basins_filter_before_1980/'
 
 gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/Rachel/Research/Data/bifurcation_data_repo/" #where shapefiles/csv live 
 
@@ -20,16 +20,17 @@ gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/
 # Read in data
 
 ##all the basins
-# basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes','Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
+basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes','Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
 
 ##w/o the Mississippi
 # basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
 # 'Gulf Coast', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
 
 ##other
-basin_ls = ['Columbia']
+# basin_ls = ['Columbia']
 # basin_ls = ['Red']
 # basin_ls = ['Mississippi', 'South Atlantic']
+# basin_ls = ['South Atlantic']
 
 # %%
 # Create the basin csvs
@@ -264,6 +265,8 @@ crc.create_combined_csv(basin_ls, folder)
 # abh.avg_HUC2(combo_segGeo, gdrive, folder)
 # abh.avg_HUC4(combo_segGeo, gdrive, folder)
 # abh.avg_HUC8(combo_segGeo, gdrive, folder)
+
+#Aggregate by fragment
 # abh.agg_HUC2(combo_frag, gdrive, folder)
 # abh.agg_HUC4(combo_frag, gdrive, folder)
 # abh.agg_HUC8(combo_frag, gdrive, folder)

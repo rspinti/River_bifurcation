@@ -128,7 +128,7 @@ def agg_HUC8(combo_frag, gdrive, folder):
     sum_by_huc8 = combo_frag.pivot_table(values = ['DamCount', 'Norm_stor'], index='HUC8', aggfunc=np.sum)
 
     avg_by_huc8 = combo_frag.pivot_table(values = ['LENGTHKM'], index='HUC8', aggfunc=np.mean)
-    avg_by_huc8 = avg_by_huc8.rename(columns = {'LENGTHKM':'avg_frag_length'})
+    avg_by_huc8 = avg_by_huc8.rename(columns = {'LENGTHKM_':'avg_frag_length'})
 
     max_by_huc8 = combo_frag.pivot_table(values = ['LENGTHKM'], index='HUC8', aggfunc=np.max)
     max_by_huc8 = max_by_huc8.rename(columns = {'LENGTHKM':'max_frag_length'})

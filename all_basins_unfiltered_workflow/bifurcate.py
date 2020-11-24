@@ -162,7 +162,7 @@ def agg_by_frag(segments):
     # Total fragment length calculated using a pivot table from segment lengths
     #fragments0 = segments.pivot_table('LENGTHKM', index='Frag', aggfunc=sum)
     # fragments0 = segments.pivot_table(values=['LENGTHKM', 'DamCount', 'Norm_stor'], index='Frag', aggfunc=sum)
-    fragments0 = segments.pivot_table(values=['LENGTHKM', 'DamCount', 'Norm_stor', 'HUC4'], index='Frag', aggfunc={'LENGTHKM' : np.sum, 'DamCount' : np.sum, 'Norm_stor' : np.sum, 'HUC4': np.median})
+    fragments0 = segments.pivot_table(values=['LENGTHKM', 'DamCount', 'Norm_stor', 'HUC2','HUC4','HUC8'], index='Frag', aggfunc={'LENGTHKM' : np.sum, 'DamCount' : np.sum, 'Norm_stor' : np.sum, 'HUC2': np.median,'HUC4': np.median, 'HUC8': np.median})
 
     # Add in the fragment index
     fragments0 = fragments0.join(segments.pivot_table(values=['Frag_Index'], index='Frag', aggfunc=min))

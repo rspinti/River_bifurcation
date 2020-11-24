@@ -12,7 +12,7 @@ from pathlib import Path
 plt.style.use('classic')
 
 ##folder on the GDrive to save output files to
-folder = 'all_basins_unfiltered/'
+folder = 'all_basins_filter_before_1950/'
 
 gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/Rachel/Research/Data/bifurcation_data_repo/" #where shapefiles/csv live 
 
@@ -27,9 +27,9 @@ gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/
 # 'Gulf Coast', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
 
 ##other
-basin_ls = ['Columbia']
+basin_ls = ['Columbia', 'North Atlantic', 'Rio Grande']
 # basin_ls = ['Red']
-# basin_ls = ['Mississippi', 'South Atlantic']
+# basin_ls = ['South Atlantic']
 
 # %%
 # Create the basin csvs

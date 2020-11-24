@@ -20,8 +20,7 @@ gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/
 # Read in data
 
 ##all the basins
-basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
-'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
+# basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes', 'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
 
 ##w/o the Mississippi
 # basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
@@ -30,6 +29,7 @@ basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
 ##other
 # basin_ls = ['Columbia']
 # basin_ls = ['Red']
+basin_ls = ['Mississippi']
 
 # %%
 # Create the basin csvs
@@ -252,14 +252,14 @@ crc.create_combined_csv(basin_ls, folder)
 
 ## Read in 
 # combo_segGeo = pd.read_csv(gdrive+folder+'/combined_segGeo.csv') #segGeo
-combo_frag = pd.read_csv(gdrive+folder+'/combined_frag.csv') #fragments
+# combo_frag = pd.read_csv(gdrive+folder+'/combined_frag.csv') #fragments
 
 # abh.avg_HUC2(combo_segGeo, gdrive, folder)
 # abh.avg_HUC4(combo_segGeo, gdrive, folder)
 # abh.avg_HUC8(combo_segGeo, gdrive, folder)
-abh.agg_HUC2(combo_frag, gdrive, folder)
-abh.agg_HUC4(combo_frag, gdrive, folder)
-abh.agg_HUC8(combo_frag, gdrive, folder)
+# abh.agg_HUC2(combo_frag, gdrive, folder)
+# abh.agg_HUC4(combo_frag, gdrive, folder)
+# abh.agg_HUC8(combo_frag, gdrive, folder)
 
 print('I ran successfully!')
 
