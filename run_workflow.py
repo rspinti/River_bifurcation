@@ -108,6 +108,8 @@ for basin in basin_ls:
     RRI.to_csv(basin + '_rri.csv')
     print(basin + " RRI to csv")
     #__________________________________________________________
+    import importlib
+    importlib.reload(bfc)
 
     # 5. divide into fragments and get average fragment properties
     # Create fragments 
@@ -117,8 +119,9 @@ for basin in basin_ls:
     t2 = datetime.datetime.now()
     print("Make Fragments:", (t2-t1))
 
-    # Summarize basic fragment properites
+    # fggregate values by fragments
     fragments = bfc.agg_by_frag(segments)
+    print(fragments.shape)
 
     # Calculate average fragment length upstream
     segments['avg_LengthUp'] = segments['LENGTHKM_up'] / \
@@ -173,8 +176,43 @@ for basin in basin_ls:
     print(basin + " Fragments DCI to csv")
     #__________________________________________________________
     
-    
-    # 7. Make Segments into a geo dataframe for plotting
+    # 7. Aggregate by HUC
+    #Aggregate segment values first
+    HUC_vallist=['HUC2','HUC4','HUC8']
+
+    for HUC_val in HUC_vallist:
+        print(HUC_val)
+        HUC_val = 'HUC8' # choices are HUC2, HUC4, HUC*
+
+        # Summarize values in the segments table
+        HUC_summary = segments.pivot_table(values=['Norm_stor', 'DamCount', 'LENGTHKM'],
+                                       index=HUC_val, aggfunc={'Norm_stor': np.sum,
+                                                                'DamCount': np.sum,
+                                                                'LENGTHKM': np.sum})
+        # Then grab variables from the fragments table
+        HUC_summaryf = fragments.pivot_table(values=['LENGTHKM'],  index=HUC_val, 
+                                         aggfunc={'LENGTHKM': (np.mean, len)})
+        HUC_summary["Avg_FragLenght"] = HUC_summaryf['LENGTHKM']['mean']
+        HUC_summary["Frag_Count"] = HUC_summaryf['LENGTHKM']['len']
+
+        #LC I think you should stop here in this workflow -- write out the HUC data to csv
+        #Thendo  the merging withshape files one time in a separate workflow for HUC analysis
+
+
+        # write out as a shape file
+        #filename = gdrive+"hucs/" + HUC_val + "_CONUS.shp"
+        #huc_shp = gp.read_file(filename)
+        #huc_shp[HUC_val] = huc_shp[HUC_val].astype('int32')
+        #huc_shp = huc_shp.merge(HUC_summary, on=HUC_val, how='left')
+        #huc_shp.to_file(gdrive+folder+HUC_val+'_indices.shp')
+        #print('Finished writing huc indices to shp')
+
+        #TO Do - figure out how to get HUC outlets. I think the thing to do is identify segments
+        # where the downtream setment is not in the same HUC 
+
+    #__________________________________________________________
+
+    # 8. Make Segments into a geo dataframe for plotting
     segmentsGeo = segments.copy()
     segmentsGeo.Coordinates = segmentsGeo.Coordinates.astype(str)
     segmentsGeo['Coordinates'] = segmentsGeo['Coordinates'].apply(wkt.loads)
@@ -187,11 +225,10 @@ for basin in basin_ls:
 
 
     # Optional Test plotting for debugging
-    #Number of dams
-    #var = "LENGTHKM_up"
+    #var = "HUC8"
     #segmentsGeo.plot(column=var, legend=True, cmap='viridis_r',
-    #                  legend_kwds={'label': var, 'orientation': "horizontal"},
-    #                  vmin=0, vmax=200)
+     #                 legend_kwds={'label': var, 'orientation': "horizontal"})
+                      #vmin=0, vmax=200)
 
     # #Average flow
     # var = "QC_MA"
