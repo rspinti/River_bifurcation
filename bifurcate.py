@@ -59,6 +59,10 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
     segments['Headwater']=np.zeros(len(segments))
     segments.loc[queue.index,'Headwater'] = 1
 
+    # Setup a column to note segments that are fragment ends
+    segments['FragEnd'] = np.zeros(len(segments))
+    segments.FragEnd[segments['DamID']>0] = 2 #all segments with a dam are a fragment outlet
+
     snum = 0  # Counter for the segment starting points -- just for print purposes
     while len(queue) > 0:
         # Initialiazation for starting segment:
@@ -98,13 +102,15 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
                 #    print("Step", step, "Ending", temploc)
                 ftemp = exit_id+1  # New Fragment ID to be assigned
                 exit_id = exit_id+1
+                segments.loc[temploc, 'FragEnd'] = 1 #Mark this segment as an end point
                 temploc = 0
 
         # print('Temploc', temploc, "Dtemp", dtemp)
 
         # assign the DamID fragment number to all of the segments
         segments.loc[templist, 'Frag'] = ftemp
-        
+
+
         # If it wasn't a terminal fragment
         # add the downstream segment to the end of the queue
         if temploc > 0:
@@ -135,10 +141,10 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
     return segments
   
 def agg_by_frag(segments): 
-    """Make a fragment data frame and aggregate by fragment.
+    """Make a fragment dataframe and aggregate by fragment.
 
     Starting from the segment dataframe this will create a new dataframe with 
-    entries for every fragment value and summarize valued by fragment. 
+    entries for every fragment value and summarize values by fragment. 
 
     Parameters:
         segments (pandas.DataFrame): 
@@ -161,10 +167,12 @@ def agg_by_frag(segments):
     # Fill in fragment information
     # Total fragment length calculated using a pivot table from segment lengths
     #fragments0 = segments.pivot_table('LENGTHKM', index='Frag', aggfunc=sum)
-    fragments0 = segments.pivot_table(values=['LENGTHKM', 'DamCount', 'Norm_stor'], index='Frag', aggfunc=sum)
+    fragments0 = segments.pivot_table(values=['LENGTHKM', 'DamCount', 'Norm_stor'], 
+                                        index='Frag', aggfunc=sum)
 
     # Add in the fragment index
-    fragments0 = fragments0.join(segments.pivot_table(values=['Frag_Index'], index='Frag', aggfunc=min))
+    fragments0 = fragments0.join(segments.pivot_table(values=['Frag_Index'], 
+                                    index='Frag', aggfunc=min))
     
     # Determining downstream segment ID --
     # Join in the downstream segment for the segments that that contains the dam
