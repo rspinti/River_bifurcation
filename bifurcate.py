@@ -201,26 +201,6 @@ def agg_by_frag(segments):
     headlist = segments.loc[segments.Headwater == 1, 'Frag'].unique()
     fragments['HeadFlag'] = np.zeros(len(fragments))
     fragments.loc[headlist, 'HeadFlag'] = 1
-
-    # Identify fragments that are outlets to HUCs
-    # Get the HUC Values for the downstream fragment IDS to use as donwtream HUC IDs
-    # I think this is NOT working -- need to debug
-    #frags_nonterm = fragments[fragments['FragEnd'] != 1]
-    #frags_nonterm['HUC2_dstr'] = fragments.loc[frags_nonterm['Frag_dstr']]['HUC2'].values
-    #frags_nonterm['HUC4_dstr'] = fragments.loc[frags_nonterm['Frag_dstr']]['HUC4'].values
-    #frags_nonterm['HUC8_dstr'] = fragments.loc[frags_nonterm['Frag_dstr']]['HUC8'].values
-
-    #fragments = fragments.join(
-    #    frags_nonterm[['HUC2_dstr', 'HUC4_dstr', 'HUC8_dstr']])
-
-    #fragments['HUC2_outlet'] = np.zeros(fragments.shape[0])
-    #fragments.HUC2_outlet[fragments.HUC2-fragments.HUC2_dstr != 0] = 1
-    
-    #fragments['HUC4_outlet'] = np.zeros(fragments.shape[0])
-    #fragments.HUC4_outlet[fragments.HUC4-fragments.HUC4_dstr != 0] = 1
-
-    #fragments['HUC8_outlet'] = np.zeros(fragments.shape[0])
-    #fragments.HUC8_outlet[fragments.HUC4-fragments.HUC4_dstr != 0] = 1
     
     return fragments
 

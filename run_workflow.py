@@ -192,8 +192,24 @@ for basin in basin_ls:
         # Then grab variables from the fragments table
         HUC_summaryf = fragments.pivot_table(values=['LENGTHKM'],  index=HUC_val, 
                                          aggfunc={'LENGTHKM': (np.mean, len)})
-        HUC_summary["Avg_FragLenght"] = HUC_summaryf['LENGTHKM']['mean']
+        HUC_summary["Avg_FragLength"] = HUC_summaryf['LENGTHKM']['mean']
         HUC_summary["Frag_Count"] = HUC_summaryf['LENGTHKM']['len']
+
+        # Identify the most downstream segment in each HUC based on the upstream segment length
+        seg_group = segments.groupby(HUC_val)
+        # Identify the segment_outlet
+        seg_outlet = seg_group.LENGTHKM_up.idxmax() 
+        HUC_summary['seg_outlet'] = seg_group.LENGTHKM_up.idxmax() #segment 'outlet'
+
+        #Use the segment outlet to look up other columns of interest
+        column_list = ['Frag', 'LENGTHKM_up', 'DOR', 'RRI']
+        outlet_vals = segments.loc[HUC_summary.seg_outlet, column_list]
+        HUC_summary = HUC_summary.join(outlet_vals, on='seg_outlet', rsuffix='_outlet')
+        HUC_summary = HUC_summary[column_list].add_suffix('_outlet')
+
+       # LC - TO Do look into why there are two HUC8's that get the same fragment # 
+       # I think its a headwater that crosses but need to be sure
+       # Frag ID = 28196, seg IDs = 840000351 & 840000235
 
         #LC I think you should stop here in this workflow -- write out the HUC data to csv
         #Thendo  the merging withshape files one time in a separate workflow for HUC analysis
@@ -206,9 +222,6 @@ for basin in basin_ls:
         #huc_shp = huc_shp.merge(HUC_summary, on=HUC_val, how='left')
         #huc_shp.to_file(gdrive+folder+HUC_val+'_indices.shp')
         #print('Finished writing huc indices to shp')
-
-        #TO Do - figure out how to get HUC outlets. I think the thing to do is identify segments
-        # where the downtream setment is not in the same HUC 
 
     #__________________________________________________________
 
