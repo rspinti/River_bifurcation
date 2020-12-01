@@ -35,11 +35,12 @@ basin_ls = ['Red']
 # Create the basin csvs
 crc.create_basin_csvs(basin_ls, gdrive, folder)   #if the specified basin csv does not exist, extract it
 
-
 # Run bifurcate analysis
 t_start = datetime.datetime.now()
 
 for basin in basin_ls:
+
+    # 1. Read  in the segment information for the basin
     segments = pd.read_csv(gdrive + folder + basin + ".csv", index_col='Hydroseq',
                    usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
                             'LENGTHKM', 'StartFlag', 'DamCount',
@@ -51,64 +52,69 @@ for basin in basin_ls:
     # Norm_stor =  normal storage in acre feet 
     segments.QC_MA = segments.QC_MA * 365 * 24 * 3600 * 0.0283168
     segments.Norm_stor = segments.Norm_stor * 1233.48
+    #__________________________________________________________
 
-    # Make a geo dataframe for plotting
-    segmentsGeo = segments.copy()
-    segmentsGeo.Coordinates = segmentsGeo.Coordinates.astype(str)
-    segmentsGeo['Coordinates'] = segmentsGeo['Coordinates'].apply(wkt.loads)
-    segmentsGeo = gp.GeoDataFrame(segmentsGeo, geometry='Coordinates')
-
-
-
-    # 1. Aggregate segment values by upstream area
+    # 2. Aggregate segment values by upstream area
     # Aggregate upstream storage, number of dams, and upstream length for every segment
     t0 = datetime.datetime.now()
+    agg_list = ['Norm_stor', 'DamCount', 'LENGTHKM', 'QC_MA']
     segments_up = bfc.upstream_ag(data=segments, downIDs='DnHydroseq', 
-                                agg_value=['Norm_stor', 'DamCount', 'LENGTHKM', 'QC_MA'])
+                                agg_value=agg_list)
     t1 = datetime.datetime.now()
     print("Aggregate by Upstream segments:", (t1-t0))
 
-    # Calculate Degree of Regulation - need to check units on this
-    segments_up['QC_MA'] = segments.QC_MA
-    segments_up['DOR'] = segments_up.Norm_stor_up /  \
+    # Add the resulting upstream aggregates back into segmetns DF with the upstream_count
+    uplist=[i+'_up' for i in agg_list]
+    segments[uplist]=segments_up[uplist]
+    segments["upstream_count"] = segments_up["upstream_count"]
+    #__________________________________________________________
+    
+    # 3.  Calculate Degree of Regulation - need to check units on this
+    #segments_up['QC_MA'] = segments.QC_MA  #LC-This woulnd't cause a bug but you also dont need to do this this column  is already there
+    segments['DOR'] = segments.Norm_stor_up /  \
         segments.QC_MA 
-
     #Give a value of -1 to locations where QC_MA is 0 and storage is positive
-    segments_up.DOR[(segments_up['QC_MA'] == 0) & (segments_up['Norm_stor_up'] >0)] = -1
-
+    segments.DOR[(segments['QC_MA'] == 0) & (segments['Norm_stor_up'] >0)] = -1
     # Give a value of 0 to anywhere that Norm_stor_up is 0 (results in NAs when norm stor up is 0 and q is 0)
-    segments_up.DOR[segments_up['Norm_stor_up'] == 0] = 0
+    segments.DOR[segments['Norm_stor_up'] == 0] = 0
 
     # Export segments upstream to csv in case of failure
-    segments_up.to_csv(basin + '_segments_up.csv')
+    segments_up['DOR']=segments['DOR']
+    #segments_up.to_csv(basin + '_segments_up.csv')
     print(basin + " Upstream segments to csv")
+    #__________________________________________________________
 
-
-
-    # 2. River regulation index
+    # 4. Calculate River regulation index
     # Weighted average of degree of regulation 
     # sum(DOR * segment flow/(sum of all upstream segment flow))
 
     #First multiple DOR * the segment flow/total of all upstream segments flow
-    segments_up['DOR_scaler'] = segments_up.DOR * segments_up.QC_MA 
+    segments['DOR_scaler'] = segments.DOR * segments.QC_MA 
     t0 = datetime.datetime.now()
     RRI_temp = bfc.upstream_ag(
-        data=segments_up, downIDs='DnHydroseq', agg_value=['DOR_scaler'])
+        data=segments, downIDs='DnHydroseq', agg_value=['DOR_scaler'])
     t1 = datetime.datetime.now()
     print('RRI upstream agg', (t1-t0))
 
-    RRI = RRI_temp.DOR_scaler_up / segments_up.QC_MA_up
+    RRI = RRI_temp.DOR_scaler_up / segments.QC_MA_up
+
+    # Add to segements Geo
+    segments["RRI"] = RRI
+    #LC - Note we should just write out segments, fragments and HUC CSVs in 
+    # one step at the bottom. Now that we know it all runs we don't have to be as 
+    # worried about saving checkpoints. 
 
     # Export  to csv in case of failure
-    RRI_temp.to_csv(basin + '_rri_temp.csv')
-    print(basin + " RRI temp to csv")
+    #RRI_temp.to_csv(basin + '_rri_temp.csv')
+    #print(basin + " RRI temp to csv")
 
-    RRI.to_csv(basin + '_rri.csv')
-    print(basin + " RRI to csv")
+    #RRI.to_csv(basin + '_rri.csv')
+    #print(basin + " RRI to csv")
+    #__________________________________________________________
+    #import importlib
+    #importlib.reload(bfc)
 
-
-
-    # 3. divide into fragments and get average fragment properties
+    # 5. divide into fragments and get average fragment properties
     # Create fragments 
     t1 = datetime.datetime.now()
     segments = bfc.make_fragments(
@@ -116,16 +122,20 @@ for basin in basin_ls:
     t2 = datetime.datetime.now()
     print("Make Fragments:", (t2-t1))
 
-    # Summarize basic fragment properites
+    # fggregate values by fragments
     fragments = bfc.agg_by_frag(segments)
+    print(fragments.shape)
+
+    # LC - if we want to do any upstream aggregation by fragments this
+    # will take some additional work. I deleted the 'average upstream fragment lenght'
+    # because it was actually calculating average upstream segment length. 
 
     # Export fragments to csv in case of failure
     fragments.to_csv(basin + '_fragments.csv')
     print(basin + " Fragments to csv")
+    #__________________________________________________________
 
-
-
-    # 4. Caculate the dci - actually I think this is DOF 
+    # 6. Caculate the dci - actually I think this is DOF 
     # because I'm  doing it with Length for now?
 
     # adding length squared for aggregation
@@ -145,7 +155,7 @@ for basin in basin_ls:
     ## This  number will only be correct at the end of fragments
     ## Upstream from there you need additional logic to figure out
     ## which fragments are actually upstream from a given segment
-    #seg_dci = segments.merge(fragments_up, how='left', left_on='Frag',
+    #  seg_dci = segments.merge(fragments_up, how='left', left_on='Frag',
     #                       right_index=True, suffixes=('_seg', '_frag'))
     # (Sum of upstream frag length^2 - length ^2 current frag)/ (length^2 upstream of seg)
     #seg_dci['LENGTHKM_seg_up'] = segments_up.LENGTHKM_up
@@ -158,67 +168,88 @@ for basin in basin_ls:
         (fragments_dci['LENGTHKM_up'] ** 2)
     segments_dci = segments.merge(fragments_dci, how='left', left_on='Frag',
                             right_index=True, suffixes=('_seg', '_frag'))
-    
+
+    ## Add to segmentsGeo
+    segments['dci'] = segments_dci[var]
+
     # Export DCI to csv in case of failure
     segments_dci.to_csv(basin + '_segments_dci.csv')
     print(basin + " Segments DCI to csv")
     fragments_dci.to_csv(basin + '_fragments_dci.csv')
     print(basin + " Fragments DCI to csv")
+    #__________________________________________________________
+    
+    # 7. Aggregate by HUC
+    #Aggregate segment values first
+    HUC_vallist=['HUC2','HUC4','HUC8']
+
+    for HUC_val in HUC_vallist:
+        print(HUC_val)
+        HUC_val = 'HUC8' # choices are HUC2, HUC4, HUC*
+
+        # Summarize values in the segments table
+        HUC_summary = segments.pivot_table(values=['Norm_stor', 'DamCount', 'LENGTHKM'],
+                                       index=HUC_val, aggfunc={'Norm_stor': np.sum,
+                                                                'DamCount': np.sum,
+                                                                'LENGTHKM': np.sum})
+        # Then grab variables from the fragments table
+        HUC_summaryf = fragments.pivot_table(values=['LENGTHKM'],  index=HUC_val, 
+                                         aggfunc={'LENGTHKM': (np.mean, len)})
+        HUC_summary["Avg_FragLength"] = HUC_summaryf['LENGTHKM']['mean']
+        HUC_summary["Frag_Count"] = HUC_summaryf['LENGTHKM']['len']
+
+        # Identify the most downstream segment in each HUC based on the upstream segment length
+        seg_group = segments.groupby(HUC_val)
+        # Identify the segment_outlet
+        seg_outlet = seg_group.LENGTHKM_up.idxmax() 
+        HUC_summary['seg_outlet'] = seg_group.LENGTHKM_up.idxmax() #segment 'outlet'
+
+        #Use the segment outlet to look up other columns of interest
+        column_list = ['Frag', 'LENGTHKM_up', 'DOR', 'RRI']
+        outlet_vals = segments.loc[HUC_summary.seg_outlet, column_list]
+        HUC_summary = HUC_summary.join(outlet_vals, on='seg_outlet', rsuffix='_outlet')
+        HUC_summary = HUC_summary[column_list].add_suffix('_outlet')
+
+       # LC - TO Do look into why there are two HUC8's that get the same fragment # 
+       # I think its a headwater that crosses but need to be sure
+       # Frag ID = 28196, seg IDs = 840000351 & 840000235
+
+        #LC I think you should stop here in this workflow -- write out the HUC data to csv
+        #Thendo  the merging withshape files one time in a separate workflow for HUC analysis
 
 
-    #Adding things to segGeo
-    # Upstream Storage
-    var = "Norm_stor_up"
-    segmentsGeo[var] = segments_up[var]
+        # write out as a shape file
+        #filename = gdrive+"hucs/" + HUC_val + "_CONUS.shp"
+        #huc_shp = gp.read_file(filename)
+        #huc_shp[HUC_val] = huc_shp[HUC_val].astype('int32')
+        #huc_shp = huc_shp.merge(HUC_summary, on=HUC_val, how='left')
+        #huc_shp.to_file(gdrive+folder+HUC_val+'_indices.shp')
+        #print('Finished writing huc indices to shp')
 
-    # Number of upstream segments
-    var = "upstream_count"
-    segmentsGeo[var] = segments_up[var]
+    #__________________________________________________________
 
-    #Length Upstream 
-    var = "LENGTHKM_up"
-    segmentsGeo[var] = segments_up[var]
+    # 8. Make Segments into a geo dataframe for plotting
+    segmentsGeo = segments.copy()
+    segmentsGeo.Coordinates = segmentsGeo.Coordinates.astype(str)
+    segmentsGeo['Coordinates'] = segmentsGeo['Coordinates'].apply(wkt.loads)
+    segmentsGeo = gp.GeoDataFrame(segmentsGeo, geometry='Coordinates')
 
-    #Number of dams upstream 
-    var = "DamCount_up"
-    segmentsGeo[var] = segments_up[var]
+    ##Create segGeo csv for each basin to plot in QGIS
+    segmentsGeo.to_csv(basin + '_segGeo.csv')
+    #__________________________________________________________
+    
 
-    #Number of dams 
-    # var = "DamCount"
-    # segmentsGeo.plot(column=var, legend=True, cmap='viridis_r',
-    #                  legend_kwds={'label': var, 'orientation': "horizontal"})
+
+    # Optional Test plotting for debugging
+    #var = "HUC8"
+    #segmentsGeo.plot(column=var, legend=True, cmap='viridis_r',
+     #                 legend_kwds={'label': var, 'orientation': "horizontal"})
+                      #vmin=0, vmax=200)
 
     # #Average flow
     # var = "QC_MA"
     # segmentsGeo.plot(column=var, legend=True, cmap='viridis_r',
     #                  legend_kwds={'label': var, 'orientation': "horizontal"})
-
-    #Degree of Regulation
-    var = "DOR"
-    segmentsGeo[var] = segments_up[var]
-
-    #RRI
-    var='RRI'
-    segmentsGeo[var] = RRI
-
-    #Fragment_Index
-    var = 'Frag_Index'
-    segmentsGeo[var] = segments[var]
-
-    #Number of fragments upstream
-    var = 'upstream_count'
-    segmentsGeo[var] = segments_dci[var]
-
-    #Average fragment length upstream
-    var = 'avg_LengthUp'
-    segmentsGeo[var] = segments_dci['LENGTHKM_up'] / segments_dci['upstream_count']
-
-    #dci
-    var = 'dci'
-    segmentsGeo[var] = segments_dci[var]
-
-    ##Create segGeo csv for each basin to plot in QGIS
-    segmentsGeo.to_csv(basin + '_segGeo.csv')
 
 
 ## Time to run all basins in basin_ls
@@ -227,6 +258,8 @@ print('Time to run all basins = ', t_end-t_start)
 
 # %%
 ## Create the combined csv
+## LC - I think this should go to a differet script 
+
 crc.create_combined_csv(basin_ls, folder)
 # crc.create_combined_csv(basin_ls)
 

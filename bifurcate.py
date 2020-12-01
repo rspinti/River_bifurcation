@@ -59,6 +59,10 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
     segments['Headwater']=np.zeros(len(segments))
     segments.loc[queue.index,'Headwater'] = 1
 
+    # Setup a column to note segments that are fragment ends
+    segments['FragEnd'] = np.zeros(len(segments))
+    segments.FragEnd[segments['DamID']>0] = 2 #all segments with a dam are a fragment outlet
+
     snum = 0  # Counter for the segment starting points -- just for print purposes
     while len(queue) > 0:
         # Initialiazation for starting segment:
@@ -98,13 +102,15 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
                 #    print("Step", step, "Ending", temploc)
                 ftemp = exit_id+1  # New Fragment ID to be assigned
                 exit_id = exit_id+1
+                segments.loc[temploc, 'FragEnd'] = 1 #Mark this segment as an end point
                 temploc = 0
 
         # print('Temploc', temploc, "Dtemp", dtemp)
 
         # assign the DamID fragment number to all of the segments
         segments.loc[templist, 'Frag'] = ftemp
-        
+
+
         # If it wasn't a terminal fragment
         # add the downstream segment to the end of the queue
         if temploc > 0:
@@ -135,10 +141,10 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
     return segments
   
 def agg_by_frag(segments): 
-    """Make a fragment data frame and aggregate by fragment.
+    """Make a fragment dataframe and aggregate by fragment.
 
     Starting from the segment dataframe this will create a new dataframe with 
-    entries for every fragment value and summarize valued by fragment. 
+    entries for every fragment value and summarize values by fragment. 
 
     Parameters:
         segments (pandas.DataFrame): 
@@ -150,6 +156,7 @@ def agg_by_frag(segments):
                 (3) DamID: Unique ID of a Dam located on the segment. Segments with 
                     no dams should have a value of 0. 
                 (4) Frag: Fragment ID assigned to every segment
+                (5) FragEnd: Flag indicating if a segment is a fragment ent point (1= domain exit, 2=dam)
         
         exit_id (int, optional): 
             Initial ID number to use for labeling terminal fragments.
@@ -161,41 +168,40 @@ def agg_by_frag(segments):
     # Fill in fragment information
     # Total fragment length calculated using a pivot table from segment lengths
     #fragments0 = segments.pivot_table('LENGTHKM', index='Frag', aggfunc=sum)
-    fragments0 = segments.pivot_table(values=['LENGTHKM', 'DamCount', 'Norm_stor'], index='Frag', aggfunc=sum)
+    fragments0 = segments.pivot_table(values=['LENGTHKM', 'DamCount', 'Norm_stor'], 
+                                        index='Frag', aggfunc=sum)
 
     # Add in the fragment index
-    fragments0 = fragments0.join(segments.pivot_table(values=['Frag_Index'], index='Frag', aggfunc=min))
-    
-    # Determining downstream segment ID --
-    # Join in the downstream segment for the segments that that contains the dam
-    # Using a pivot table with a sum here since there should only be one
-    # value for a each non zero DamID and the zero will not be
-    # included in the join
-    frgDN = segments.pivot_table('DnHydroseq', index='DamID', aggfunc=sum)
-    fragments0 = fragments0.join(frgDN)
+    fragments0 = fragments0.join(segments.pivot_table(values=['Frag_Index'], 
+                                    index='Frag', aggfunc=min))
 
-    #Determine the flow for the segment with the dam
-    frgQ = segments.pivot_table('QC_MA', index='DamID', aggfunc=sum)
-    fragments0 = fragments0.join(frgQ)
-    
-    # Get the downstream fragment ID -
+    #Filter out just the segments that are fragment end points
+    # Set the index of this subset to the fragment index so you can join it later
+    FragEnds=segments[segments['FragEnd']>0]
+    FragEnds['Hydroseq'] = FragEnds.index
+    FragEnds = FragEnds.set_index('Frag')
+
+    # Join in columns for the frament outlets
+    fragments0 = fragments0.join(FragEnds[['Hydroseq', 'DnHydroseq', 'QC_MA', 'HUC2', 
+                                            'HUC4', 'HUC8', 'Norm_stor_up', 'DamCount_up',
+                                            'LENGTHKM_up', 'DOR', 'RRI', 'FragEnd']])
+
     # Use the downstream segment for each fragment to get its
-    # downstream fragment ID
-    fragments = fragments0.merge(segments.Frag, left_on='DnHydroseq',
-                                 right_on=segments.index, suffixes=('_left', '_right'), how='left')
+    # downstream fragment IDs 
+    fragments0['DnHydroseq'] = fragments0['DnHydroseq'].replace(0, np.nan)
+    fragments = fragments0.merge(segments['Frag'], left_on='DnHydroseq',
+                                 right_on=segments.index,
+                                  suffixes=('', '_dstr'), how='left')
     fragments.index = fragments0.index
-    fragments = fragments.rename(columns={'Frag': 'FragDn'})
-    
-    # Identify headwater fragments  -
+    fragments = fragments.rename(columns={'Frag': 'Frag_dstr'})
+
+    # Identify headwater fragments  
     # Mark fragments that are headwaters
     #headlist = segments.loc[segments.UpHydroseq == 0, 'Frag'].unique()
     headlist = segments.loc[segments.Headwater == 1, 'Frag'].unique()
     fragments['HeadFlag'] = np.zeros(len(fragments))
     fragments.loc[headlist, 'HeadFlag'] = 1
-
-    #Gettting the # of dams on a segment
-
-
+    
     return fragments
 
 
