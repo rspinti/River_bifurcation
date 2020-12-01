@@ -80,7 +80,7 @@ for basin in basin_ls:
 
     # Export segments upstream to csv in case of failure
     segments_up['DOR']=segments['DOR']
-    segments_up.to_csv(basin + '_segments_up.csv')
+    #segments_up.to_csv(basin + '_segments_up.csv')
     print(basin + " Upstream segments to csv")
     #__________________________________________________________
 
@@ -100,16 +100,19 @@ for basin in basin_ls:
 
     # Add to segements Geo
     segments["RRI"] = RRI
+    #LC - Note we should just write out segments, fragments and HUC CSVs in 
+    # one step at the bottom. Now that we know it all runs we don't have to be as 
+    # worried about saving checkpoints. 
 
     # Export  to csv in case of failure
-    RRI_temp.to_csv(basin + '_rri_temp.csv')
-    print(basin + " RRI temp to csv")
+    #RRI_temp.to_csv(basin + '_rri_temp.csv')
+    #print(basin + " RRI temp to csv")
 
-    RRI.to_csv(basin + '_rri.csv')
-    print(basin + " RRI to csv")
+    #RRI.to_csv(basin + '_rri.csv')
+    #print(basin + " RRI to csv")
     #__________________________________________________________
-    import importlib
-    importlib.reload(bfc)
+    #import importlib
+    #importlib.reload(bfc)
 
     # 5. divide into fragments and get average fragment properties
     # Create fragments 
@@ -123,9 +126,9 @@ for basin in basin_ls:
     fragments = bfc.agg_by_frag(segments)
     print(fragments.shape)
 
-    # Calculate average fragment length upstream
-    segments['avg_LengthUp'] = segments['LENGTHKM_up'] / \
-                              segments['upstream_count']
+    # LC - if we want to do any upstream aggregation by fragments this
+    # will take some additional work. I deleted the 'average upstream fragment lenght'
+    # because it was actually calculating average upstream segment length. 
 
     # Export fragments to csv in case of failure
     fragments.to_csv(basin + '_fragments.csv')
@@ -255,6 +258,8 @@ print('Time to run all basins = ', t_end-t_start)
 
 # %%
 ## Create the combined csv
+## LC - I think this should go to a differet script 
+
 crc.create_combined_csv(basin_ls, folder)
 # crc.create_combined_csv(basin_ls)
 
