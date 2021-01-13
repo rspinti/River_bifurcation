@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# --------------------------------------------------------------
+### PART 1: Requests resources to run your job.
+# --------------------------------------------------------------
+### Optional. Set the job name
+#PBS -N hello_world
+### REQUIRED. Specify the PI group for this job
+#PBS -W group_list=<lecondon>
+### Optional. Request email when job begins and ends
+### PBS -m bea
+### Optional. Specify email address to use for notification
+### PBS -M <YOUR NETID>@email.arizona.edu
+### REQUIRED. Set the queue for your job.
+#PBS -q windfall
+### REQUIRED. Set the number of nodes, cores and memory that will be used for this job
+### pcmem is optional as it defaults to 6gb per core. Only required for high memory = 42gb.
+#PBS -l select=1:ncpus=1:mem=6gb:pcmem=6gb
+### REQUIRED. Specify "wallclock time" required for this job, hhh:mm:ss
+#PBS -l walltime=0:10:0
+### Optional. cput = time x ncpus. Default: cput = walltime x ncpus.
+#PBS -l cput=0:1:0
+
+# --------------------------------------------------------------
+### PART 2: Executes bash commands to run your job
+# --------------------------------------------------------------
+### Load required modules/libraries if needed
+module load python/3.6/3.6.5
+source /xdisk/lecondon/rspinti/river_bifurcation/bfc_env/bin/activate
+### change to your script’s directory
+cd /xdisk/lecondon/rspinti/river_bifurcation/testing_red
+### Run your work
+./run_workflow
+sleep 10
