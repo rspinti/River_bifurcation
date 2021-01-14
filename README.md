@@ -9,4 +9,5 @@ titled **'run_workflow.py'** to calculate the bifurcation of all river networks 
   - bifurcate.py
   - create_csvs.py
   - extract.py
+  - read.py
   - run_workflow.py
