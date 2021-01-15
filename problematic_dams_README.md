@@ -8,7 +8,7 @@ had the same ID and storage value but were listed as separate dams.
 
 Large dams were considered to be those with storage values greater or equal to the
 GRanD threshold for storage 0.1 km^3. We obtained 171 dams that fit these requirements
-by joining NABD to NID on NIDID in python and then filtering out all the dams that
+by joining NABD to NID on NIDID in Python and then filtering out all the dams that
 did not have a COMID. Of the 171 dams, 56 had the wrong NIDID. The remainder did
 not appear in NABD at all (manual check to find matching names).
 

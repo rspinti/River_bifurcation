@@ -6,19 +6,19 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
 
     This function traverses through a stream network using NHD stream segment
     IDs delineating stream fragments that are divide by dams (refer to xx)
-    for details on stream fragment definition.  This function requires a databse
-    of stream segments where each stream segment (1) a unique identifier and
+    for details on stream fragment definition.  This function requires a database
+    of stream segments where each stream segment has a unique identifier and
     identified upstream and downstream segments.  Additionaly, dams must be mapped
     to stream segments and have their own unique identifiers. 
 
     The resulting fragment designations will be assigned the Dam ID for any fragment
-    ending in a dam or another unique identifieer starting at the exit_ID number
+    ending in a dam or another unique identifier starting at the exit_ID number
     for fragments which end at the terminal point of a river (default value is 999000). 
 
     Parameters:
         segments (pandas.DataFrame): 
-             Dataframe providing segment informatation. The index for this dataframe
-            must be the unique segment identifiers an it must have the following 
+             Dataframe providing segment information. The index for this dataframe
+            must be the unique segment identifiers as it must have the following 
             columns
                 - DnHydroseq: Unique segment ID for the downstream segment
                 - UpHydroseq: Unique segment ID for the upstream segment
@@ -29,17 +29,17 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
             Initial ID number to use for labeling terminal fragments.
         
         subwatershed (boolean, optional):
-             If Subbasins is set to true it will identify headwaters as segements 
+             If Subbasins is set to True it will identify headwaters as segments 
              which are not listed as downstream neighbors (DnHydroSeq) to any other basins
 
-             If this is set to False it  will select all subbasins whith an UpHydroseq == 0 
+             If this is set to False it  will select all subbasins with an UpHydroseq == 0 
 
     
     Returns:
         segments (pandas.DataFrame): An updated dataframe with a fragments column.
     """
     
-    # Add a column for Fragment #'s and initilze with the DamIDs
+    # Add a column for Fragment #'s and initialize with the DamIDs
     segments['Frag'] = segments['DamID']
     #print(segments['Frag'])
 
@@ -53,7 +53,6 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
     else: 
         #initialize queue with all segments with upstream ID of 0
         queue = segments.loc[segments.UpHydroseq == 0]
-    #print(len(queue))
 
     #record these segments as headwaters
     segments['Headwater']=np.zeros(len(segments))
@@ -65,7 +64,7 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
 
     snum = 0  # Counter for the segment starting points -- just for print purposes
     while len(queue) > 0:
-        # Initialiazation for starting segment:
+        # Initialization for starting segment:
         step = 0  # start a counter for steps down the fragment
         snum = snum + 1
         temploc = queue.index[0]  # start with the segment at the top of the queue
@@ -74,10 +73,10 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
         templist.append(temploc)  # seed the list with the initial segment
         ftemp = segments.loc[temploc, 'Frag']  # Fragment # of current segment
         #if verbose == True:
-        #    print("Satarting headwater #", snum, "SegID", temploc,
+        #    print("Starting headwater #", snum, "SegID", temploc,
         #        "damflag", ftemp)
 
-        # Walk downstream until you hit a dam or a segment thats
+        # Walk downstream until you hit a dam or a segment that's
         # already been processed
         while ftemp == 0:
             step = step + 1
@@ -95,7 +94,7 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
                 temploc = dtemp
 
             # If not then you have reached a terminal point
-            # add another Fragment ID for this teminal fragment
+            # add another Fragment ID for this terminal fragment
             # And set the dam flag to the fragment ID
             else:
                 #if verbose == True:
@@ -148,15 +147,15 @@ def agg_by_frag(segments):
 
     Parameters:
         segments (pandas.DataFrame): 
-             Dataframe providing segment informatation. The index for this dataframe
-            must be the unique segment identifiers an it must have the following 
+             Dataframe providing segment information. The index for this dataframe
+            must be the unique segment identifiers and it must have the following 
             columns 
                 (1) DnHydroseq: Unique segment ID for the downstream segment
                 (2) UpHydroseq: Unique segment ID for the upstream segment
                 (3) DamID: Unique ID of a Dam located on the segment. Segments with 
                     no dams should have a value of 0. 
                 (4) Frag: Fragment ID assigned to every segment
-                (5) FragEnd: Flag indicating if a segment is a fragment ent point (1= domain exit, 2=dam)
+                (5) FragEnd: Flag indicating if a segment is a fragment end point (1= domain exit, 2=dam)
         
         exit_id (int, optional): 
             Initial ID number to use for labeling terminal fragments.
@@ -164,10 +163,9 @@ def agg_by_frag(segments):
     Returns:
         fragments (pandas.DataFrame): Fragments dataframe with summary information by fragment
     """
-    # Making a fragment data frame and aggregated by fragment
+    # Making a fragment data frame and variables aggregated by fragment
     # Fill in fragment information
     # Total fragment length calculated using a pivot table from segment lengths
-    #fragments0 = segments.pivot_table('LENGTHKM', index='Frag', aggfunc=sum)
     fragments0 = segments.pivot_table(values=['LENGTHKM', 'DamCount', 'Norm_stor'], 
                                         index='Frag', aggfunc=sum)
 
@@ -181,10 +179,10 @@ def agg_by_frag(segments):
     FragEnds['Hydroseq'] = FragEnds.index
     FragEnds = FragEnds.set_index('Frag')
 
-    # Join in columns for the frament outlets
+    # Join in columns for the fragment outlets
     fragments0 = fragments0.join(FragEnds[['Hydroseq', 'DnHydroseq', 'QC_MA', 'HUC2', 
                                             'HUC4', 'HUC8', 'Norm_stor_up', 'DamCount_up',
-                                            'LENGTHKM_up', 'DOR', 'RRI', 'FragEnd']])
+                                            'LENGTHKM_up', 'DOR', 'FragEnd']])
 
     # Use the downstream segment for each fragment to get its
     # downstream fragment IDs 
@@ -197,7 +195,6 @@ def agg_by_frag(segments):
 
     # Identify headwater fragments  
     # Mark fragments that are headwaters
-    #headlist = segments.loc[segments.UpHydroseq == 0, 'Frag'].unique()
     headlist = segments.loc[segments.Headwater == 1, 'Frag'].unique()
     fragments['HeadFlag'] = np.zeros(len(fragments))
     fragments.loc[headlist, 'HeadFlag'] = 1
@@ -219,7 +216,6 @@ def map_up_frag(fragments):
     Returns:
         UpDict (dict): Dictionary of upstream fragment IDs for ever fragment
     """
-    # STEP 3 : Make a list of the upstream fragments for every fragment
     #  Make a dictionary using the fragments as Keys
     #  with a list for every fragment of its upstream fragments
 
@@ -262,7 +258,7 @@ def map_up_frag(fragments):
             UpDict[DnFrag].extend(UpDict[ftemp])
             fragments.loc[DnFrag, 'parent_count'] += 1
 
-            # If the # of visitied parents ('parent_count')
+            # If the # of visited parents ('parent_count')
             #  == the number of parents (nparent) then 
             # add the downstream neigbor to the queue 
 
@@ -277,12 +273,6 @@ def map_up_frag(fragments):
 
         #remove the current fragment from the queue
         queuef = queuef.drop(queuef.index[0])
-
-    # Remove the duplicate values in each list
-    # Shouldn't need to do this anymore
-    #for key in UpDict:
-    #    #print(key)
-    #    UpDict[key] = list(dict.fromkeys(UpDict[key]))
 
     return UpDict
 
@@ -327,7 +317,7 @@ def upstream_ag(data, downIDs, agg_value):
     """Aggregates values by upstream 
 
     This function traverses through a stream network summing aggregating variable by 
-    upstream area.  It requries an input dataframe which contains segment or fragment
+    upstream area.  It requires an input dataframe which contains segment or fragment
     IDs, downstream IDs (downIDs) and a list of columns to be aggregated (agg_value). 
 
     The resulting dataframe will have '_up' fields added which are the upstream sums
@@ -336,8 +326,8 @@ def upstream_ag(data, downIDs, agg_value):
 
     Parameters:
         data (pandas.DataFrame): 
-            Data frame of segements or fragments where the index is the segment or fragment
-            ID. It must contain a 'downIDs' column with downstream segement or fragment IDS
+            Data frame of segments or fragments where the index is the segment or fragment
+            ID. It must contain a 'downIDs' column with downstream segment or fragment IDS
             and at least on column to be aggregated (agg_value).
         
         downIDs (string): 
@@ -357,7 +347,7 @@ def upstream_ag(data, downIDs, agg_value):
     up_agg = data[pick]
     #up_agg = data[[downIDs, agg_value]]
 
-    #Start off giving every ID its onwn v
+    #Start off giving every ID its own v
     upvar = [s + '_up' for s in agg_value]
     up_agg[upvar] = up_agg[agg_value]
 
@@ -396,9 +386,9 @@ def upstream_ag(data, downIDs, agg_value):
                                                                'upstream_count']
             up_agg.loc[DnTemp, 'parent_count'] += 1
 
-            # If the # of visitied parents ('parent_count')
+            # If the # of visited parents ('parent_count')
             #  == the number of parents (nparent) then
-            # add the downstream neigbor to the queue
+            # add the downstream neighbor to the queue
 
             if up_agg.loc[DnTemp, 'parent_count'] ==  \
                     up_agg.loc[DnTemp, 'nparent']:

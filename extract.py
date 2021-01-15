@@ -18,26 +18,30 @@ def join_dams_flowlines(run_name, flowlines, nabd):
 
     Parameters:
         flowlines (pandas.DataFrame): 
-            List of the major U.S. river basins that correspond to the run_name.
-            The HUC 2 values listed after the name are used to filter the 
-            HUC2 into the groupings we want.
+            Dataframe containing NHD flowline attributes necessary for processing.
+            Each data entry is considered a flowline segment.
             columns
                 - Hydroseq: Unique segment ID for current segment, places flowlines
                 in hydrologic order
                 - UpHydroseq: Unique segment ID for the upstream segment
                 - DnHydroseq: Unique segment ID for the downstream segment
-                - HUC2: 14-digit HUC 
+                - REACHCODE: 14-digit Hydrologic Unit Code (HUC) from the USGS
                 - LENGTHKM: Length of segment in km
                 - StartFlag: Flag to indicate if segment is a headwater (0 = not
                 headwater, 1 = headwater)
                 - FTYPE: Type of flowline
                 - COMID: Common ID of the NHD flowline
                 - WKT: Geometry of flowline stored in WKT format
+                - QE_MA: Estimate of actual mean flow
+                - QC_MA: Estimate of “natural” mean flow
+                - StreamOrde: Strahler stream order of the segment
+                - HUC2: 2-digit HUC 
+                - HUC4: 4-digit HUC 
+                - HUC2: 8-digit HUC 
                 
         nabd (pandas.DataFrame): 
             Dataframe providing dam attributes. A unique DamID is added to ID
-            fragments in bifurcate.py. Duplicate dams were dropped because 
-            their storage was the same.
+            fragments in bifurcate.py. Duplicate dams were dropped.
             columns
                 - COMID: Common ID of the NHD flowline, used to like NABD to NHD
                 - NIDID: Official unique dam ID (string) from NID
@@ -88,25 +92,28 @@ def join_dams_flowlines(run_name, flowlines, nabd):
             by Hydroseq and Norm_stor is summed among each Hydroseq. This accounts
             for storage values of multiple dams lying on one segment.
             columns
-                - Hydroseq
-                - Norm_stor
+                - Hydroseq: Unique segment ID for current segment, places flowlines
+                in hydrologic order
+                - Norm_stor: Normal storage of the resevoir in ac-ft
             
         dam_count (pandas.Dataframe):
             Dataframe obtained from a pandas pivot table. The data was grouped
             by Hydroseq and then the number of occurences of that Hydroseq was
             summed to get the Dam_Count for each segment.
             columns
-                - Hydroseq
-                - Dam_Count
+                - Hydroseq: Unique segment ID for current segment, places flowlines
+                in hydrologic order
+                - Dam_Count: Indicates the number of dams along a segment (int) 
         
         count_sum_merge (pandas.DataFrame): 
             Dataframe that contains the filtered Dam_Count and Norm_stor values
             from storage_sum and dam_count. Hydroseq was used to merge storage_sum
             and dam_count.
             columns
-                - Hydroseq
-                - Norm_stor
-                - Dam_Count
+                - Hydroseq: Unique segment ID for current segment, places flowlines 
+                in hydrologic order
+                - Norm_stor: Normal storage of the resevoir in ac-ft
+                - Dam_Count: Indicates the number of dams along a segment (int)
 
         nabd_nhd_filtered (pandas.DataFrame): 
             GeoDataframe that filters out the Norm_stor and Dam_Count columns as 
@@ -134,7 +141,6 @@ def join_dams_flowlines(run_name, flowlines, nabd):
             GeoDataframe that contains the filtered Hydroseq, Norm_stor, and 
             Dam_count values. It also contains all prior attributes that are 
             needed for bifurcate.py.
-            
             columns
                 - Hydroseq: Unique segment ID for current segment, places flowlines
                 in hydrologic order
@@ -174,7 +180,6 @@ def join_dams_flowlines(run_name, flowlines, nabd):
                     'Red' : [9],
                     'Rio Grande' : [13],
                     'South Atlantic' : [3]}
-    # print(major_basins)
     
     
     # Based on the run_name, a different basin will be selected
@@ -219,10 +224,6 @@ def join_dams_flowlines(run_name, flowlines, nabd):
         (flowlines['HUC2'] == major_basins[run_name][4]) |
         (flowlines['HUC2'] == major_basins[run_name][5])]
         nabd_nhd_join = nabd.merge(mississippi, how= 'right', on='COMID') # Merge NABD and Mississippi
-    # if run_name == 'Mississippi':
-    #     #create dataframe with Mississippi flowlines
-    #     mississippi = flowlines.loc[(flowlines['HUC2'] == major_basins[run_name][4])]
-    #     nabd_nhd_join = nabd.merge(mississippi, how= 'right', on='COMID') # Merge NABD and Mississippi
         
     if run_name == 'North Atlantic':
         #create dataframe with North Atlantic flowlines
@@ -253,27 +254,17 @@ def join_dams_flowlines(run_name, flowlines, nabd):
     ## Filtering the Hydroseq, storage, and dam count
     # Group by Hydroseq and sum storage
     storage_sum = nabd_nhd_join.groupby(['Hydroseq'])['Norm_stor'].sum().reset_index()
-    # storage_sum = nabd_nhd_join.groupby(['Hydroseq'])['Norm_stor'].sum()
-    # print(type(storage_sum))
-    # print(storage_sum.columns)
   
     # Count # of duplicate dams
     nabd_nhd_join['DamCount'] = np.zeros(len(nabd_nhd_join))  #add count column
     dam_count = nabd_nhd_join.pivot_table(index=['Hydroseq'], aggfunc={'DamCount':'size'}).reset_index() #Aggregate by the size of each Hydroseq
-    # dam_count = nabd_nhd_join.pivot_table(index=['Hydroseq'], aggfunc={'DamCount':'size'}) #Aggregate by the size of each Hydroseq
-    # print(type(dam_count))
-    # print(dam_count.columns)
     
     # Merge count and storage dataframes
     count_sum_merge = storage_sum.merge(dam_count, how= 'left', on='Hydroseq')  #merge count and sum 
-    # print(type(count_sum_merge))
-    # print(count_sum_merge.columns)
   
     # Filter nabd_nhd_join for merge
     nabd_nhd_filtered = nabd_nhd_join.drop_duplicates(subset='Hydroseq', keep="last")  #drop everything but last duplicate
     nabd_nhd_filtered = nabd_nhd_filtered.drop(columns=['Norm_stor', 'DamCount'])  #drop Norm_stor and DamCount, so new one is added
-    # print(type(nabd_nhd_filtered))
-    # print(nabd_nhd_filtered.columns)
   
     # Merge the dataframes so the storage and DamIDs are how we want
     nabd_nhd_df = nabd_nhd_filtered.merge(count_sum_merge, how= 'left', on='Hydroseq') #Merge filtered dataframes
@@ -286,8 +277,6 @@ def join_dams_flowlines(run_name, flowlines, nabd):
   
     # Set index to Hydroseq
     nabd_nhd_df = nabd_nhd_df.set_index('Hydroseq')
-    # print(type(nabd_nhd_df))
-    # print(nabd_nhd_df.columns)
     
     # Rename WKT column
     nabd_nhd_df = nabd_nhd_df.rename(columns={'WKT': 'Coordinates'})
@@ -297,7 +286,6 @@ def join_dams_flowlines(run_name, flowlines, nabd):
     # Creates csv for each run_name
     segments_df = nabd_nhd_df.copy()
     segments_df.to_csv(run_name+'.csv')  
-    # segments_df.to_csv('extracted_HUC1019.csv') #for extracted HUC
     print('Finished writing segments_df to csv..........')
     
     t4 = time()

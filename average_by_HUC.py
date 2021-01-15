@@ -1,4 +1,11 @@
 import geopandas as gp, pandas as pd, numpy as np
+# how to summarize the HUC data after it is created in run_workflow.py
+## print out each HUC analysis to a csv named basin_HUC2/4/8.csv
+## join all these csvs into one big one
+## then, join the big one with the corresponding shapefile from the Drive
+### this will be a new file that we can use for mapping in QGIS
+
+
 def avg_HUC2(combo_segGeo, gdrive, folder):
     """Averages attribute by HUC 2.
 
