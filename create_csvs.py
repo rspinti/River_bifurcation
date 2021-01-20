@@ -51,7 +51,7 @@ def create_basin_csvs(basin_ls, gdrive, folder):
             ex.join_dams_flowlines(basin, flowlines, dams)
             
 
-def create_combined_csv(basin_ls, folder):
+def create_combined_csv(basin_ls, folder, huc):
     """Creates combined csv of all flowlines.
 
         This function
@@ -74,14 +74,13 @@ def create_combined_csv(basin_ls, folder):
     # combined_csv.to_csv("combined_flowlines.csv", index=False, encoding='utf-8-sig')
 
 
-    # Seg Geos
-    extension = '_segGeo.csv'
-    all_segGeos = [i+extension for i in basin_ls]
-    # all_segGeos
+    # Specified HUC indices
+    extension = huc+'_indices.csv'
+    HUC_summary_list = [i+extension for i in basin_ls]
 
     #combine all files in the list
-    combined_csv = pd.concat([pd.read_csv(f) for f in all_segGeos])
+    combined_csv = pd.concat([pd.read_csv(f) for f in HUC_summary_list])
 
     #export to csv
-    combined_csv.to_csv("combined_segGeo.csv", index=False, encoding='utf-8-sig')
+    combined_csv.to_csv(huc+"_summary.csv", index=False, encoding='utf-8-sig')
 

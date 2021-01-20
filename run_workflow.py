@@ -6,7 +6,7 @@ Created by: Laura Condon and Rachel Spinti
 # %%
 import pandas as pd, numpy as np, geopandas as gp, matplotlib.pyplot as plt
 import datetime, matplotlib as mpl
-import bifurcate as bfc, create_csvs as crc, average_by_HUC as abh
+import bifurcate as bfc, create_csvs as crc
 from shapely import wkt
 from pathlib import Path
 plt.style.use('classic')
@@ -27,7 +27,7 @@ gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/
 # 'Gulf Coast', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
 
 ##other
-basin_ls = ['Red']
+basin_ls = ['Columbia', 'Red']
 
 # %%
 # Create the basin csvs
@@ -142,7 +142,7 @@ for basin in basin_ls:
                                                                 'LENGTHKM': np.sum})
         HUC_summary["Max_HUC_stor"] = HUC_summary['Norm_stor']['amax']
         print('HUC summary test 1')
-        print(HUC_summary)
+        print(HUC_summary.columns)
         # Then grab variables from the fragments table
         HUC_summaryf = fragments.pivot_table(values=['LENGTHKM'],  index=HUC_val, 
                                          aggfunc={'LENGTHKM': (np.mean, len, np.max)})
@@ -151,7 +151,7 @@ for basin in basin_ls:
         HUC_summary["Frag_Count"] = HUC_summaryf['LENGTHKM']['len']
 
         print('HUC summary test 2')
-        # print(HUC_summary)
+        print(HUC_summary.columns)
 
         # Identify the most downstream segment in each HUC based on the upstream segment length
         seg_group = segments.groupby(HUC_val)
@@ -176,19 +176,14 @@ for basin in basin_ls:
         HUC_summary.rename(columns = dict(add_suffix), inplace=True)
         
         print('HUC summary test 5')
-        # print(HUC_summary.columns)
+        print(HUC_summary.columns)
 
         #LC I think you should stop here in this workflow -- write out the HUC data to csv
         #Then do the merging with shapefiles one time in a separate workflow for HUC analysis
 
-
-        # write out as a shape file
-        #filename = gdrive+"hucs/" + HUC_val + "_CONUS.shp"
-        #huc_shp = gp.read_file(filename)
-        #huc_shp[HUC_val] = huc_shp[HUC_val].astype('int32')
-        #huc_shp = huc_shp.merge(HUC_summary, on=HUC_val, how='left')
-        #huc_shp.to_file(gdrive+folder+HUC_val+'_indices.shp')
-        #print('Finished writing huc indices to shp')
+        # write out to csv
+        HUC_summary.to_csv(gdrive+folder+basin+HUC_val+'_indices.csv')
+        print('Finished writing huc indices to csv')
 
     #__________________________________________________________
 
@@ -206,19 +201,5 @@ for basin in basin_ls:
 t_end = datetime.datetime.now()
 print('Time to run all basins = ', t_end-t_start)
 print('I ran successfully!')
-
-# %%
-## Create the combined csv
-## LC - I think this should go to a differet script 
-
-# crc.create_combined_csv(basin_ls, folder)
-# # crc.create_combined_csv(basin_ls)
-
-# ## Read in 
-# combo_segGeo = pd.read_csv(gdrive+folder+'/combined_segGeo.csv')
-
-# abh.avg_HUC2(combo_segGeo, gdrive, folder)
-# abh.avg_HUC4(combo_segGeo, gdrive, folder)
-# abh.avg_HUC8(combo_segGeo, gdrive, folder)
 
 # %%
