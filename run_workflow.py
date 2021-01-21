@@ -27,7 +27,8 @@ gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/
 # 'Gulf Coast', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
 
 ##other
-basin_ls = ['Columbia', 'Red']
+# basin_ls = ['Columbia', 'Red']
+basin_ls = ['Red']
 
 # %%
 # Create the basin csvs
@@ -140,18 +141,24 @@ for basin in basin_ls:
                                        index=HUC_val, aggfunc={'Norm_stor': (np.sum, np.max),
                                                                 'DamCount': np.sum,
                                                                 'LENGTHKM': np.sum})
-        HUC_summary["Max_HUC_stor"] = HUC_summary['Norm_stor']['amax']
-        print('HUC summary test 1')
-        print(HUC_summary.columns)
+
+        #Fixing pivot table columns
+        HUC_summary.columns = ["_".join((i,j)) for i,j in HUC_summary.columns]
+        HUC_summary.reset_index()
+
+        # print('HUC summary test 1')
+        # print(HUC_summary.columns)
         # Then grab variables from the fragments table
         HUC_summaryf = fragments.pivot_table(values=['LENGTHKM'],  index=HUC_val, 
                                          aggfunc={'LENGTHKM': (np.mean, len, np.max)})
-        HUC_summary["Avg_FragLength"] = HUC_summaryf['LENGTHKM']['mean']
-        HUC_summary["Max_FragLength"] = HUC_summaryf['LENGTHKM']['amax']
-        HUC_summary["Frag_Count"] = HUC_summaryf['LENGTHKM']['len']
 
-        print('HUC summary test 2')
-        print(HUC_summary.columns)
+        HUC_summaryf.columns = ["_".join((i,j)) for i,j in HUC_summaryf.columns]
+        HUC_summaryf.reset_index()
+
+        HUC_summary = pd.concat([HUC_summary, HUC_summaryf], axis=1)
+
+        # print('HUC summary test 2')
+        # print(HUC_summary.columns)
 
         # Identify the most downstream segment in each HUC based on the upstream segment length
         seg_group = segments.groupby(HUC_val)
@@ -159,24 +166,24 @@ for basin in basin_ls:
         # Identify the segment_outlet
         seg_outlet = seg_group.LENGTHKM_up.idxmax() 
         HUC_summary['seg_outlet'] = seg_group.LENGTHKM_up.idxmax() #segment 'outlet'
-        
-        print('HUC summary test 3')
-        # print(HUC_summary)
+
+        # print('HUC summary test 3')
+        # print(HUC_summary.columns)
 
         #Use the segment outlet to look up other columns of interest
         column_list = ['Frag', 'LENGTHKM_up', 'DOR', 'dci', 'Norm_stor_up', 'QC_MA']
         outlet_vals = segments.loc[HUC_summary.seg_outlet, column_list]
         HUC_summary = HUC_summary.join(outlet_vals, on='seg_outlet', rsuffix='_outlet')
-
-        print('HUC summary test 4')
-        # print(HUC_summary)
+    
+        # print('HUC summary test 4')
+        # print(HUC_summary.columns)
 
         # HUC_summary = HUC_summary[column_list].add_suffix('_outlet')
         add_suffix = [(i, i+'_outlet') for i in column_list]
         HUC_summary.rename(columns = dict(add_suffix), inplace=True)
         
-        print('HUC summary test 5')
-        print(HUC_summary.columns)
+        # print('HUC summary test 5')
+        # print(HUC_summary.columns)
 
         #LC I think you should stop here in this workflow -- write out the HUC data to csv
         #Then do the merging with shapefiles one time in a separate workflow for HUC analysis

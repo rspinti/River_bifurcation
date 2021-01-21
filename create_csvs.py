@@ -27,7 +27,6 @@ def create_basin_csvs(basin_ls, gdrive, folder):
                 Dataframe containing all NHD flowlines from read.py.
             dams (pandas.DataFrame):
                 Dataframe containing all dams from read.py.
-            nabd_nhd (pandas.DataFrame):
                 
         
         Returns:
@@ -52,35 +51,42 @@ def create_basin_csvs(basin_ls, gdrive, folder):
             
 
 def create_combined_csv(basin_ls, folder, huc):
-    """Creates combined csv of all flowlines.
+    """Combines all the basins together into one csv.
 
-        This function
+        This function takes a list of basins and creates a combined csv. The 
+        list of basins is used to read in each corresponding csv, which are 
+        concatenated into the same dataframe. That combined dataframe is then 
+        printed out to csv.
 
         Parameters:
-            segments (pandas.DataFrame): 
-                
-        
+            basin_ls (List):
+                List of basins whose csvs will be read in.
+            folder (string):
+                Folder on the Google Drive where csv are be saved.
+            huc (string):
+                HUC value to be evaluated.
+            extension (string):
+                Csv extension that varies by HUC value.
+            HUC_summary_list (List):
+                List of basin names with their HUC extension added.
+            combined_csv (pandas.DataFrame):
+                Dataframe that contains all basins.
+                columns
+                    add columns here with descriptions
+    
+
         Returns:
+            A single csv containing all the data from each basin csv.
     """        
     os.chdir("/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/Rachel/Research/Data/bifurcation_data_repo/"+folder+"/")
 
-    # extension = '.csv'
-    # all_flowlines = [i+extension for i in basin_ls]     # all_flowlines
-
-    # #combine all files in the list
-    # combined_csv = pd.concat([pd.read_csv(f) for f in all_flowlines ])
-
-    # #export to csv
-    # combined_csv.to_csv("combined_flowlines.csv", index=False, encoding='utf-8-sig')
-
-
-    # Specified HUC indices
+    # Make list of names of files to be read in (by basin and HUC value)
     extension = huc+'_indices.csv'
     HUC_summary_list = [i+extension for i in basin_ls]
 
-    #combine all files in the list
+    # Combine all basin csvs together into a dataframe
     combined_csv = pd.concat([pd.read_csv(f) for f in HUC_summary_list])
 
-    #export to csv
+    # Export to csv 
     combined_csv.to_csv(huc+"_summary.csv", index=False, encoding='utf-8-sig')
 

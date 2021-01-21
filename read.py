@@ -24,7 +24,7 @@ def read_lines_dams(gdrive):
                 - geometry: Point geometry for dam locations
                 - DamID: Unique integer ID for each dam to use for fragments
                 - Grand_flag: Identifies dams that are contained with GRanD
-        grand (pandas_DataFrame):
+        grand (pandas.DataFrame):
             Dataframe providing GRanD dam attributes. Used to create a flag.
                 - NABD_ID: Official unique dam ID (string) from NID
                 - GRAND_ID: Official unique dam ID (string) from GRanD
@@ -62,7 +62,9 @@ def read_lines_dams(gdrive):
                 - StreamOrde: Strahler stream order of the segment
                 - HUC2: 2-digit HUC 
                 - HUC4: 4-digit HUC 
-                - HUC2: 8-digit HUC 
+                - HUC2: 8-digit HUC
+
+
     Returns:
         The dataframes nabd and flowlines for extract.py.
     """ 
