@@ -99,5 +99,8 @@ def HUC8_indices_merge(gdrive, folder):
     huc8 = gp.read_file(gdrive+"hucs/HUC8_CONUS.shp") 
         
     huc8 = huc8.merge(HUC8_summary, left_on = 'HUC8_no', right_on = 'HUC8', how = 'left')
-    huc8.to_file(gdrive+folder+'huc8_indices.shp')
+    # huc8.to_file(gdrive+folder+"huc8_indices.shp")
+    huc8.to_file('huc8_test.shp')
+    # print(type(huc8))
+    # huc8.to_file('huc8_indices.shp')
     print('Finished writing huc8 indices to shp')

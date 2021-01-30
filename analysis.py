@@ -18,7 +18,7 @@ gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/
 # 'Gulf Coast', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
 
 #other
-basin_ls = ['Red', 'Columbia']
+basin_ls = ['Red', 'Colorado']
 
 # %%
 # Analyses

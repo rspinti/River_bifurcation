@@ -75,6 +75,23 @@ def read_lines_dams(gdrive):
                             usecols=['COMID', 'NIDID', 'Norm_stor', 'Max_stor', 
                                     'Year_compl', 'Purposes', 'geometry'])  #read in NABD from Drive
     nabd_dams = nabd_dams.drop_duplicates(subset='NIDID', keep="first")  #drop everything after first duplicate
+    print('Length of old NABD', len(nabd_dams))
+
+    #Add missing dams to NABD
+    dams_to_add = gp.read_file(gdrive+'other_dam_datasets/dams_to_add_sjoin.csv')
+    dams_to_add = dams_to_add[['NIDID','Norm_stor', 'Max_stor', 'Year_compl', 
+                                'Purposes', 'join_COMID', 'geometry']].rename(columns={'join_COMID':'COMID'}) #filter added dams to match NABD
+    nabd_dams = dams_to_add.append(nabd_dams)
+    print('Length of new NABD', len(nabd_dams))
+
+    #Update wrong NIDIDs for large dams
+    wrong_id = pd.read_csv(gdrive+'other_dam_datasets/large_dams_wrongID.csv', index_col = 0)
+    wrong_id = wrong_id[wrong_id['NABD_NIDID'].notna()]
+    wrong_id = wrong_id['NIDID']
+    nabd_dams.update(wrong_id)
+
+    #Add columns to NABD df for data processing/analysis
+    nabd_dams['COMID'] = pd.to_numeric(nabd_dams['COMID'])
     nabd_dams["DamID"] = range(len(nabd_dams.COMID))  #add DamID 
     nabd_dams = pd.DataFrame(nabd_dams)
     nabd_dams['Grand_flag'] = np.zeros(len(nabd_dams))  #add flag column
@@ -95,7 +112,7 @@ def read_lines_dams(gdrive):
     flowlines = pd.read_csv(gdrive+"nhd/NHDFlowlines.csv",
                                 usecols=['Hydroseq', 'UpHydroseq', 'DnHydroseq',
                                         'REACHCODE','LENGTHKM', 'StartFlag', 
-                                        'FTYPE', 'COMID', 'WKT', 'QE_MA', 'QC_MA',
+                                        'FTYPE','COMID', 'WKT', 'QE_MA', 'QC_MA',
                                         'StreamOrde'])  #all NHD Flowlines
     
     #Filter the flowlines to select by HUC 2

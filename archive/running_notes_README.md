@@ -178,7 +178,7 @@ storage because the the NIDID documentation says, ' For normally dry flood contr
 Thus, the dams are mainly for flood control and are not affecting the river flow as much. We will keep blanks because their
 storage value is unknown. Again from the NIDID documentation, 'If unknown, the value will be blank and not zero.'
 
-I need to figure out if the script will be affected by loops in the flowlines and how that will affect our result. I also 
+I need to figure out if the script will be affected by loops in the flowlines and how that will affect our result. I also
 need to check for underground conduits. We will most likely keep those because they connect otherwise discontinuous streams.
 We ARE KEEPING isolated lines because they are added to the fexit variable as not having a fragment ID. In this sense, they
 are already accounted for. Also where did the discharge estimates come from in NHD.
@@ -198,14 +198,14 @@ number of duplicates to the number of dams upstream. The second bug was that the
 We will filter out coastlines because we do not want to worry about what happens when the downstream flowline is a coastline.
 We also decided to keep zero storage values, so we can turn those on and off for comparison.
 
-We determined that we need to discuss what metrics and indices we want to include in our analysis. 
+We determined that we need to discuss what metrics and indices we want to include in our analysis.
 
 ## August 11, 2020
 We had a discussion about metrics for the study. We decided we would for sure use RRI and RFI to show the degree of connectivity. RFI is conceptually equivalent to RCI, so we will only use RFI. We have most of the variables needed to calculate these two metrics. Jun is checking what discharge value we want to use from NHD because there are multiple.
 
-The GRanD database will be used to compare NABD to. 
+The GRanD database will be used to compare NABD to.
 
-### *NOTE:* 
+### *NOTE:*
 When an error occurs with the ftemp variable (line 95 in bifurcate.py), it could be multiple things. I have had the following issues:
 - Hydroseq is duplicated
 - Negative values (from lat/long not being in the right column)
@@ -213,7 +213,7 @@ When an error occurs with the ftemp variable (line 95 in bifurcate.py), it could
 ## August 25, 2020
 The bifurcate code was tested on all the basins, but got stuck in the Mississippi, which is the largest basin by far. Laura is going to test and debug the code with this basin.
 
-GRanD was joined to NABD, but there were some issues. Not all of the GRanD dams listed had a corresponding NABD ID that we could join to. There were 27 dams in this category. We decided to *ignore* these dams because their storage amgnitude was fairly small and there were so few spread across 8 states.
+GRanD was joined to NABD, but there were some issues. Not all of the GRanD dams listed had a corresponding NABD ID that we could join to. There were 27 dams in this category. We decided to *ignore* these dams because their storage magnitude was fairly small and there were so few spread across 8 states.
 
 Jun determined that QE_MA is the flow after human use and QC_MA is the 'natural' or undisturbed flow. We will use QC_MA in our RRI and RFI calculations.
 
