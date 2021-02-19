@@ -14,27 +14,27 @@ gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/
 # 'Gulf Coast','Mississippi', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
 
 #w/o the Mississippi
-# basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
-# 'Gulf Coast', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
+basin_ls = ['California', 'Colorado', 'Columbia', 'Great Basin', 'Great Lakes',
+'Gulf Coast', 'North Atlantic', 'Red', 'Rio Grande','South Atlantic']
 
 #other
-basin_ls = ['Red', 'Colorado']
+# basin_ls = ['Red', 'Colorado']
 
 # %%
 # Analyses
 
 #HUC analysis
 ## HUC values
-HUC_list = ['HUC8']
-# HUC_list=['HUC2','HUC4','HUC8']
+# HUC_list = ['HUC8']
+HUC_list=['HUC2','HUC4','HUC8']
 
 ## Create combined csv
 for huc in HUC_list:
     crc.create_combined_csv(basin_ls, folder, huc)
 
 ## Merge the combined csvs with HUC shapefiles
-# hm.HUC2_indices_merge(gdrive, folder)  #HUC2
-# hm.HUC4_indices_merge(gdrive, folder)  #HUC4
+hm.HUC2_indices_merge(gdrive, folder)  #HUC2
+hm.HUC4_indices_merge(gdrive, folder)  #HUC4
 hm.HUC8_indices_merge(gdrive, folder)    #HUC8
 
 #__________________________________________________________

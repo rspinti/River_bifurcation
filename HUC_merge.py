@@ -28,9 +28,12 @@ def HUC2_indices_merge(gdrive, folder):
     """  
     HUC2_summary = pd.read_csv(gdrive+folder+'/HUC2_summary.csv')
 
-    huc2 = gp.read_file(gdrive+"hucs/HUC2_CONUS.shp") 
+    huc2 = gp.read_file(gdrive+"hucs/HUC2_CONUS.shp")
+    huc2 = huc2[['OBJECTID', 'AreaSqKm', 'AreaAcres', 'Name', 'States', 'HUC2_db', 'geometry']]
     
-    huc2 = huc2.merge(HUC2_summary, on = 'HUC2', how = 'left')
+    huc2 = huc2.merge(HUC2_summary, left_on = 'HUC2_db', right_on = 'HUC2', how = 'left')
+    # huc4 = huc4.drop(columns=['HUC4'])
+
     huc2.to_file(gdrive+folder+'huc2_indices.shp')
     print('Finished writing huc2 indices to shp')
 
@@ -62,9 +65,13 @@ def HUC4_indices_merge(gdrive, folder):
     """   
     HUC4_summary = pd.read_csv(gdrive+folder+'/HUC4_summary.csv')
 
-    huc4 = gp.read_file(gdrive+"hucs/HUC4_CONUS.shp") 
+    huc4 = gp.read_file(gdrive+"hucs/HUC4_CONUS.shp")
+    huc4 = huc4[['OBJECTID', 'AreaSqKm', 'AreaAcres', 'Name', 'States', 'HUC4_no', 'geometry']]
 
     huc4 = huc4.merge(HUC4_summary, left_on = 'HUC4_no', right_on = 'HUC4', how = 'left')
+    # huc4 = huc4.merge(HUC4_summary, on = 'HUC4', how = 'left')
+    huc4 = huc4.drop(columns=['HUC4'])
+
     huc4.to_file(gdrive+folder+'huc4_indices.shp')
     print('Finished writing huc4 indices to shp')
 
@@ -97,10 +104,11 @@ def HUC8_indices_merge(gdrive, folder):
     HUC8_summary = pd.read_csv(gdrive+folder+'/HUC8_summary.csv')
 
     huc8 = gp.read_file(gdrive+"hucs/HUC8_CONUS.shp") 
+    huc8 = huc8[['OBJECTID', 'AreaSqKm', 'AreaAcres', 'Name', 'States', 'HUC8_no', 'geometry']]
         
     huc8 = huc8.merge(HUC8_summary, left_on = 'HUC8_no', right_on = 'HUC8', how = 'left')
-    # huc8.to_file(gdrive+folder+"huc8_indices.shp")
-    huc8.to_file('huc8_test.shp')
+    huc8 = huc8.drop(columns=['HUC8'])
+    
+    huc8.to_file('huc8_attributes.shp')
     # print(type(huc8))
-    # huc8.to_file('huc8_indices.shp')
     print('Finished writing huc8 indices to shp')

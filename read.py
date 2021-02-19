@@ -78,7 +78,7 @@ def read_lines_dams(gdrive):
     print('Length of old NABD', len(nabd_dams))
 
     #Add missing dams to NABD
-    dams_to_add = gp.read_file(gdrive+'other_dam_datasets/dams_to_add_sjoin.csv')
+    dams_to_add = gp.read_file(gdrive+'other_dam_datasets/dams_to_add_centroid.shp')
     dams_to_add = dams_to_add[['NIDID','Norm_stor', 'Max_stor', 'Year_compl', 
                                 'Purposes', 'join_COMID', 'geometry']].rename(columns={'join_COMID':'COMID'}) #filter added dams to match NABD
     nabd_dams = dams_to_add.append(nabd_dams)
@@ -89,6 +89,13 @@ def read_lines_dams(gdrive):
     wrong_id = wrong_id[wrong_id['NABD_NIDID'].notna()]
     wrong_id = wrong_id['NIDID']
     nabd_dams.update(wrong_id)
+
+    # print(type(nabd_dams))
+    # nabd_damsGeo = nabd_dams.copy()
+    # nabd_damsGeo.geometry = nabd_damsGeo.geometry.astype(str)
+    # nabd_damsGeo['geometry'] = nabd_damsGeo['geometry'].apply(wkt.loads)
+    # nabd_damsGeo = gp.GeoDataFrame(nabd_damsGeo, geometry='geometry')
+    # nabd_dams.to_file(gdrive+'nabd/nabd_corrected.shp')
 
     #Add columns to NABD df for data processing/analysis
     nabd_dams['COMID'] = pd.to_numeric(nabd_dams['COMID'])
