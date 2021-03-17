@@ -32,7 +32,7 @@ def HUC2_indices_merge(gdrive, folder):
     huc2 = huc2[['OBJECTID', 'AreaSqKm', 'AreaAcres', 'Name', 'States', 'HUC2_db', 'geometry']]
     
     huc2 = huc2.merge(HUC2_summary, left_on = 'HUC2_db', right_on = 'HUC2', how = 'left')
-    # huc4 = huc4.drop(columns=['HUC4'])
+    huc2 = huc2.fillna(0)
 
     huc2.to_file(gdrive+folder+'huc2_indices.shp')
     print('Finished writing huc2 indices to shp')
@@ -71,6 +71,7 @@ def HUC4_indices_merge(gdrive, folder):
     huc4 = huc4.merge(HUC4_summary, left_on = 'HUC4_no', right_on = 'HUC4', how = 'left')
     # huc4 = huc4.merge(HUC4_summary, on = 'HUC4', how = 'left')
     huc4 = huc4.drop(columns=['HUC4'])
+    huc4 = huc4.fillna(0)
 
     huc4.to_file(gdrive+folder+'huc4_indices.shp')
     print('Finished writing huc4 indices to shp')
@@ -108,6 +109,7 @@ def HUC8_indices_merge(gdrive, folder):
         
     huc8 = huc8.merge(HUC8_summary, left_on = 'HUC8_no', right_on = 'HUC8', how = 'left')
     huc8 = huc8.drop(columns=['HUC8'])
+    huc8 = huc8.fillna(0)
     
     huc8.to_file('huc8_attributes.shp')
     # print(type(huc8))
