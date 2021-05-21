@@ -11,12 +11,12 @@ basin_ls = ['California', 'Colorado', 'Columbia', 'Great_Basin', 'Great_Lakes',
 
 ## purpose folder names
 # purposes = ["flood_control", "hydroelectric", "other", "water_supply"]
-purposes = ["flood_control", "hydroelectric", "other"]
+purposes = ["flood_control", "hydroelectric"]
 
-for i in purposes:
+for purp in purposes:
     ## folder on the GDrive to save output files to
-    data_folder = 'HPC_runs_fixed/processed_data/'+i+'/'
-    results_folder = 'HPC_runs_fixed/analyzed_data/'+i+'/'
+    data_folder = 'HPC_runs_fixed/processed_data/'+purp+'/'
+    results_folder = 'HPC_runs_fixed/analyzed_data/testing/'
     gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/Rachel/Research/Data/bifurcation_data_repo/" 
 
     # Analyses
@@ -24,28 +24,29 @@ for i in purposes:
     #HUC analysis
     ## HUC values
     HUC_list=['HUC2','HUC4','HUC8']
+    # HUC_list=['HUC8']
 
     ## Create combined csv
     for huc in HUC_list:
-        crc.combined_huc_csv(basin_ls, gdrive, data_folder, huc)
+        crc.combined_huc_csv(basin_ls, gdrive, data_folder, results_folder, huc)
 
     ## Merge the combined csvs with HUC shapefiles
-    huc2 = hm.HUC2_indices_merge(gdrive, data_folder, results_folder, i)  #HUC2
+    huc2 = hm.HUC2_indices_merge(gdrive, results_folder, purp)  #HUC2
     print("HUC 2 indices finished")
-    huc4 = hm.HUC4_indices_merge(gdrive, data_folder, results_folder, i)  #HUC4
+    huc4 = hm.HUC4_indices_merge(gdrive, results_folder, purp)  #HUC4
     print("\n"+"HUC 4 indices finished")
-    huc8 = hm.HUC8_indices_merge(gdrive, data_folder, results_folder, i)    #HUC8
+    huc8 = hm.HUC8_indices_merge(gdrive, results_folder, purp)    #HUC8
     print("\n" +"HUC 8 indices finished")
 
     #__________________________________________________________
 
     # percent storage purpose analysis
     huc8_control = gp.read_file(gdrive+"HPC_runs_fixed/processed_data/all_basins_unfiltered/huc8_indices.shp")
-    huc8_control = huc8_control[["HUC8_no", "geometry", "Norm_sto_2", "Name"]]
+    huc8_control = huc8_control[["HUC8_no", "geometry", "Norm_sto_1", "Name"]]
 
     drop_cols = [str(i) for i in huc8.columns]
     drop_cols.remove("HUC8_no")
-    drop_cols.remove("Norm_stor_up_outlet")
+    drop_cols.remove("Norm_stor_sum")
     drop_cols.remove("geometry")
     huc8 = huc8.drop(columns = drop_cols)
 
@@ -53,10 +54,11 @@ for i in purposes:
 
     for i in huc8.index:
         if huc8.HUC8_no[i] == huc8_control.HUC8_no[i]:
-            huc8["percent_stor"][i] = huc8.Norm_stor_up_outlet[i]/huc8_control.Norm_sto_2[i]
+            huc8["percent_stor"][i] = huc8.Norm_stor_sum[i]/huc8_control.Norm_sto_1[i]    
+            # huc8["percent_stor"][i] = huc8.Norm_stor_up_outlet[i]/huc8_control.Norm_sto_2[i]
 
-    huc8.stor_diff.fillna(-1, inplace=True)
-    huc8.to_file(gdrive+results_folder+'huc8_percent_stor_'+i+'.shp')
+    huc8.percent_stor.fillna(-1, inplace=True)
+    huc8.to_file(gdrive+results_folder+'huc8_percent_stor_'+purp+'.shp')
         
 print("\n" +"HUC8 storage difference")
 

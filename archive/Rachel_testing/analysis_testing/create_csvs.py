@@ -50,7 +50,7 @@ def create_basin_csvs(basin_ls, gdrive, folder):
             ex.join_dams_flowlines(basin, flowlines, dams)
             
 
-def combined_huc_csv(basin_ls, gdrive, folder, huc):
+def combined_huc_csv(basin_ls, gdrive, data_folder, results_folder, huc):
     """Combines all the basins together into one csv by HUC.
 
         This function takes a list of basins and creates a combined csv. The 
@@ -78,7 +78,7 @@ def combined_huc_csv(basin_ls, gdrive, folder, huc):
         Returns:
             A single csv containing all the data from each basin csv.
     """        
-    os.chdir(gdrive+folder)
+    os.chdir(gdrive+data_folder)
 
     # Make list of names of files to be read in (by basin and HUC value)
     extension = huc+'_indices.csv'
@@ -88,10 +88,10 @@ def combined_huc_csv(basin_ls, gdrive, folder, huc):
     combined_csv = pd.concat([pd.read_csv(f) for f in HUC_summary_list])
 
     # Export to csv 
-    combined_csv.to_csv(huc+"_summary.csv", index=False, encoding='utf-8-sig')
+    combined_csv.to_csv(gdrive+results_folder+huc+"_summary.csv", index=False, encoding='utf-8-sig')
     
     
-def create_combined_segGeo_csv(basin_ls, gdrive, folder):
+def combined_segGeo_csv(basin_ls, gdrive, data_folder, results_folder):
     """Combines all the basins together into one csv.
 
         This function takes a list of basins and creates a combined csv. The 
@@ -119,7 +119,7 @@ def create_combined_segGeo_csv(basin_ls, gdrive, folder):
         Returns:
             A single csv containing all the data from each basin csv.
     """        
-    os.chdir(gdrive+folder)
+    os.chdir(gdrive+data_folder)
 
     # Make list of names of files to be read in (by basin and HUC value)
     extension = '_segGeo.shp'
@@ -129,12 +129,14 @@ def create_combined_segGeo_csv(basin_ls, gdrive, folder):
     combined_csv = pd.concat([gp.read_file(b) for b in basin_summary_list])
     print("all basins added")
     
-    os.chdir(gdrive+folder)
-    # Export to csv 
-    combined_csv.to_csv("all_basins_segGeo.csv", index=False, encoding='utf-8-sig')
-    # combined_csv.to_file("all_basins_segGeo.shp")
+    os.chdir(gdrive+results_folder)
+    # Export to shp 
+    # combined_csv.to_csv("all_basins_segGeo.csv", index=False, encoding='utf-8-sig')
+    combined_csv.to_file("all_basins_segGeo.shp")
     print("combined shapefile written")
     # print(type(combined_csv))
+
+    return combined_csv
     
     
 

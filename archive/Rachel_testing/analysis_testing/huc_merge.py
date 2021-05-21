@@ -1,6 +1,6 @@
 import geopandas as gp, pandas as pd, numpy as np
 
-def HUC2_indices_merge(gdrive, data_folder, results_folder, purpose):
+def HUC2_indices_merge(gdrive, results_folder, purpose):
     """Merges HUC2 summary with HUC2 shapefile.
         This function takes the combined HUC2 summary csv created in the
         create_combined_csv.py function and merges it with the HUC2 shapefile for
@@ -23,7 +23,7 @@ def HUC2_indices_merge(gdrive, data_folder, results_folder, purpose):
         Returns:
             A shapefile containing geometry and indices by HUC2.
     """  
-    HUC2_summary = pd.read_csv(gdrive+data_folder+'HUC2_summary_'+purpose+'.csv')
+    HUC2_summary = pd.read_csv(gdrive+results_folder+'HUC2_summary.csv')
 
     huc2 = gp.read_file(gdrive+"hucs/HUC2_CONUS.shp")
     huc2 = huc2[['OBJECTID', 'AreaSqKm', 'AreaAcres', 'Name', 'States', 'HUC2_db', 'geometry']]
@@ -38,7 +38,7 @@ def HUC2_indices_merge(gdrive, data_folder, results_folder, purpose):
     
     return huc2
 
-def HUC4_indices_merge(gdrive, data_folder, results_folder, purpose):
+def HUC4_indices_merge(gdrive, results_folder, purpose):
     """Merges HUC4 summary with HUC4 shapefile.
         This function takes the combined HUC4 summary csv created in the
         create_combined_csv.py function and merges it with the HUC4 shapefile for
@@ -61,7 +61,7 @@ def HUC4_indices_merge(gdrive, data_folder, results_folder, purpose):
         Returns:
             A shapefile containing geometry and indices by HUC4.
     """   
-    HUC4_summary = pd.read_csv(gdrive+data_folder+'HUC4_summary_'+purpose+'.csv')
+    HUC4_summary = pd.read_csv(gdrive+results_folder+'HUC4_summary.csv')
 
     huc4 = gp.read_file(gdrive+"hucs/HUC4_CONUS.shp")
     huc4 = huc4[['OBJECTID', 'AreaSqKm', 'AreaAcres', 'Name', 'States', 'HUC4_no', 'geometry']]
@@ -76,7 +76,7 @@ def HUC4_indices_merge(gdrive, data_folder, results_folder, purpose):
     
     return huc4
 
-def HUC8_indices_merge(gdrive, data_folder, results_folder, purpose):
+def HUC8_indices_merge(gdrive, results_folder, purpose):
     """Merges HUC8 summary with HUC8 shapefile.
         This function takes the combined HUC8 summary csv created in the
         create_combined_csv.py function and merges it with the HUC8 shapefile for
@@ -99,9 +99,9 @@ def HUC8_indices_merge(gdrive, data_folder, results_folder, purpose):
         Returns:
             A shapefile containing geometry and indices by HUC8.
     """   
-    HUC8_summary = pd.read_csv(gdrive+data_folder+'HUC8_summary_'+purpose+'.csv')
+    HUC8_summary = pd.read_csv(gdrive+results_folder+'HUC8_summary.csv')
 
-    huc8 = gp.read_file(gdrive+"hucs/HUC8_CONUS.shp") 
+    huc8 = gp.read_file(gdrive+"HPC_runs_fixed/analyzed_data/huc8_indices.shp") 
     huc8 = huc8[['OBJECTID', 'AreaSqKm', 'AreaAcres', 'Name', 'States', 'HUC8_no', 'geometry']]
         
     huc8 = huc8.merge(HUC8_summary, left_on = 'HUC8_no', right_on = 'HUC8', how = 'left')
