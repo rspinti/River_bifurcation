@@ -10,8 +10,8 @@ basin_ls = ['California', 'Colorado', 'Columbia', 'Great_Basin', 'Great_Lakes',
 'Gulf_Coast','Mississippi', 'North_Atlantic', 'Red', 'Rio_Grande','South_Atlantic']
 
 ## purpose folder names
-# purposes = ["flood_control", "hydroelectric", "other", "water_supply"]
-purposes = ["flood_control"]
+purposes = ["flood_control", "hydroelectric", "other", "water_supply"]
+# purposes = ["flood_control"]
 
 for purp in purposes:
     ## folder on the GDrive to save output files to
@@ -43,7 +43,7 @@ for purp in purposes:
 
     # percent storage purpose analysis
     huc8_control = gp.read_file(gdrive+"HPC_runs_fixed/analyzed_data/huc8_indices.shp")
-    huc8_control = huc8_control[["HUC8_no", "geometry", "Norm_sto_1", "States"]]
+    huc8_control = huc8_control[["HUC8_no", "geometry", "Norm_sto_1", "States", "Name"]]
 
     drop_cols = [str(i) for i in huc8.columns]
     drop_cols.remove("HUC8_no")
@@ -53,6 +53,7 @@ for purp in purposes:
     huc8 = huc8.drop(columns = drop_cols)
 
     huc8["percent_stor"] = 0
+    huc8[["Name", "States"]] = huc8_control[[ "Name", "States"]]
 
     # if huc8.HUC8_no == huc8_control.HUC8_no:
     #     huc8["geometry"] = huc8_control["geometry"]
