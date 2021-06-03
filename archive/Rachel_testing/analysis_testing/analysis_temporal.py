@@ -1,29 +1,29 @@
 # %%
 import geopandas as gp, pandas as pd, numpy as np
-import create_csvs as crc, huc_merge as hm
+import create_csvs as crc, huc_merge as hm, time_diff as td
 
 # %%
 # Specifying inputs
 ## Basin lists 
 #all the basins
-basin_ls = ['California', 'Colorado', 'Columbia', 'Great_Basin', 'Great_Lakes',
-'Gulf_Coast','Mississippi', 'North_Atlantic', 'Red', 'Rio_Grande','South_Atlantic']
+# basin_ls = ['California', 'Colorado', 'Columbia', 'Great_Basin', 'Great_Lakes',
+# 'Gulf_Coast','Mississippi', 'North_Atlantic', 'Red', 'Rio_Grande','South_Atlantic']
 
-data_folder = 'HPC_runs_fixed/processed_data/all_basins_unfiltered'
-results_folder = 'HPC_runs_fixed/analyzed_data/all_basins_unfiltered/'
+basin_ls = ['Red']
+
+# data_folder = 'HPC_runs_fixed/processed_data/'
+results_folder = 'HPC_runs_fixed/analyzed_data/'
 gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/Rachel/Research/Data/bifurcation_data_repo/" 
 
-# ## purpose folder names
-# # purposes = ["flood_control", "hydroelectric", "other", "water_supply"]
-# purposes = ["flood_control", "hydroelectric"]
+purposes = ['no_dams', '1920', '1950', '1980', '2010']
 
 # for purp in purposes:
 #     ## folder on the GDrive to save output files to
 #     data_folder = 'HPC_runs_fixed/processed_data/'+purp+'/'
-#     results_folder = 'HPC_runs_fixed/analyzed_data/testing/'
+#     # results_folder = 'HPC_runs_fixed/analyzed_data/testing'
+#     results_folder = 'HPC_runs_fixed/analyzed_data/'+purp+'/'
 #     gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/Rachel/Research/Data/bifurcation_data_repo/" 
-
-#     # Analyses
+#     print("     ---------------"+purp+"---------------")
 
 #     #HUC analysis
 #     ## HUC values
@@ -42,33 +42,15 @@ gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/
 #     huc8 = hm.HUC8_indices_merge(gdrive, results_folder, purp)    #HUC8
 #     print("\n" +"HUC 8 indices finished")
 
-#     #__________________________________________________________
+#__________________________________________________________
+# the stor difference shapefiles
+folder = 'HPC_runs_fixed/analyzed_data/'
+td.stor_diff(gdrive, folder)
 
-#     # percent storage purpose analysis
-#     huc8_control = gp.read_file(gdrive+"HPC_runs_fixed/processed_data/all_basins_unfiltered/huc8_indices.shp")
-#     huc8_control = huc8_control[["HUC8_no", "geometry", "Norm_sto_1", "Name"]]
-
-#     drop_cols = [str(i) for i in huc8.columns]
-#     drop_cols.remove("HUC8_no")
-#     drop_cols.remove("Norm_stor_sum")
-#     drop_cols.remove("geometry")
-#     huc8 = huc8.drop(columns = drop_cols)
-
-#     huc8["percent_stor"] = 0
-
-#     for i in huc8.index:
-#         if huc8.HUC8_no[i] == huc8_control.HUC8_no[i]:
-#             huc8["percent_stor"][i] = huc8.Norm_stor_sum[i]/huc8_control.Norm_sto_1[i]    
-#             # huc8["percent_stor"][i] = huc8.Norm_stor_up_outlet[i]/huc8_control.Norm_sto_2[i]
-
-#     huc8.percent_stor.fillna(-1, inplace=True)
-#     huc8.to_file(gdrive+results_folder+'huc8_percent_stor_'+purp+'.shp')
-        
-# print("\n" +"HUC8 storage difference")
-
-# print("\n"+"** Analysis Complete **")
 # %%
  #segGeo analysis
 crc.combined_segGeo_csv(basin_ls, gdrive, data_folder, results_folder)
 print("\n" +"Create combined csv finished")
+# %%
+print("\n"+"** Analysis Complete **")
 # %%
