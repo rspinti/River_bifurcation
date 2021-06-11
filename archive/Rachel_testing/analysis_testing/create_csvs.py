@@ -138,5 +138,50 @@ def combined_segGeo_csv(basin_ls, gdrive, data_folder, results_folder):
 
     return combined_csv
     
+def combined_frag_csv(basin_ls, gdrive, data_folder, results_folder):
+    """Combines all the basins together into one csv.
+
+        This function takes a list of basins and creates a combined csv. The 
+        list of basins is used to read in each corresponding csv, which are 
+        concatenated into the same dataframe. That combined dataframe is then 
+        printed out to csv.
+
+        Parameters:
+            basin_ls (List):
+                List of basins whose csvs will be read in.
+            folder (string):
+                Folder on the Google Drive where csv are be saved.
+            huc (string):
+                HUC value to be evaluated.
+            extension (string):
+                Csv extension that varies by HUC value.
+            HUC_summary_list (List):
+                List of basin names with their HUC extension added.
+            combined_csv (pandas.DataFrame):
+                Dataframe that contains all basins.
+                columns
+                    add columns here with descriptions
     
+
+        Returns:
+            A single csv containing all the data from each basin csv.
+    """        
+    os.chdir(gdrive+data_folder)
+
+    # Make list of names of files to be read in (by basin and HUC value)
+    extension = '_fragments.csv'
+    basin_summary_list = [i+extension for i in basin_ls]
+
+    # Combine all basin csvs together into a dataframe
+    combined_csv = pd.concat([pd.read_csv(b) for b in basin_summary_list])
+    print("all basins added")
+    
+    os.chdir(gdrive+results_folder)
+    # Export to shp 
+    # combined_csv.to_csv("all_basins_segGeo.csv", index=False, encoding='utf-8-sig')
+    combined_csv.to_csv("all_basins_frags.csv")
+    print("combined fragment csv written")
+    # print(type(combined_csv))
+
+    return combined_csv
 

@@ -6,24 +6,24 @@ import create_csvs as crc, huc_merge as hm, time_diff as td
 # Specifying inputs
 ## Basin lists 
 #all the basins
-# basin_ls = ['California', 'Colorado', 'Columbia', 'Great_Basin', 'Great_Lakes',
-# 'Gulf_Coast','Mississippi', 'North_Atlantic', 'Red', 'Rio_Grande','South_Atlantic']
+basin_ls = ['California', 'Colorado', 'Columbia', 'Great_Basin', 'Great_Lakes',
+'Gulf_Coast','Mississippi', 'North_Atlantic', 'Red', 'Rio_Grande','South_Atlantic']
 
-basin_ls = ['Red']
+# basin_ls = ['Red']
 
-# data_folder = 'HPC_runs_fixed/processed_data/'
+data_folder = 'HPC_runs_fixed/processed_data/'
 results_folder = 'HPC_runs_fixed/analyzed_data/'
 gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/Rachel/Research/Data/bifurcation_data_repo/" 
 
 purposes = ['no_dams', '1920', '1950', '1980', '2010']
 
-# for purp in purposes:
+for purp in purposes:
 #     ## folder on the GDrive to save output files to
-#     data_folder = 'HPC_runs_fixed/processed_data/'+purp+'/'
-#     # results_folder = 'HPC_runs_fixed/analyzed_data/testing'
-#     results_folder = 'HPC_runs_fixed/analyzed_data/'+purp+'/'
-#     gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/Rachel/Research/Data/bifurcation_data_repo/" 
-#     print("     ---------------"+purp+"---------------")
+    data_folder = 'HPC_runs_fixed/processed_data/'+purp+'/'
+    # results_folder = 'HPC_runs_fixed/analyzed_data/testing'
+    results_folder = 'HPC_runs_fixed/analyzed_data/'+purp+'/'
+    gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/Rachel/Research/Data/bifurcation_data_repo/" 
+    print("     ---------------"+purp+"---------------")
 
 #     #HUC analysis
 #     ## HUC values
@@ -42,15 +42,19 @@ purposes = ['no_dams', '1920', '1950', '1980', '2010']
 #     huc8 = hm.HUC8_indices_merge(gdrive, results_folder, purp)    #HUC8
 #     print("\n" +"HUC 8 indices finished")
 
+    #segGeo analysis
+    crc.combined_segGeo_csv(basin_ls, gdrive, data_folder, results_folder)
+
+     #fragment analysis
+    # crc.combined_frag_csv(basin_ls, gdrive, data_folder, results_folder)
+
+    print("\n" +"Create combined csv finished")
 #__________________________________________________________
 # the stor difference shapefiles
-folder = 'HPC_runs_fixed/analyzed_data/'
-td.stor_diff(gdrive, folder)
+# folder = 'HPC_runs_fixed/analyzed_data/'
+# td.stor_diff(gdrive, folder)
 
-# %%
- #segGeo analysis
-crc.combined_segGeo_csv(basin_ls, gdrive, data_folder, results_folder)
-print("\n" +"Create combined csv finished")
+
 # %%
 print("\n"+"** Analysis Complete **")
 # %%
