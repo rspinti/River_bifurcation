@@ -65,65 +65,31 @@ gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/
 
 #dor difference
 # grand_dor = gp.read_file(gdrive+results_folder+"all_basins_segGeo.shp")
-grand_dor = gp.read_file(gdrive+data_folder+"Colorado_segGeo.shp")
+grand_dor = gp.read_file(gdrive+results_folder+"all_basins_segGeo.shp")
 grand_dor = grand_dor[["Hydroseq", "geometry", "DOR", "line_width"]]  #filter to columns we care about
 
 
 # grand_seggeo = grand_seggeo[["Hydroseq", "geometry", "DOR", "line_width"]] 
 # grand_seggeo["percent_dor"] = 0  #add column
 # unfil_dor = gp.read_file(gdrive+'HPC_runs_fixed/analyzed_data/all_basins_unfiltered/all_basins_segGeo.shp') #read in unfiltered data
-unfil_dor = gp.read_file(gdrive+'HPC_runs_fixed/processed_data/all_basins_unfiltered/Colorado_segGeo.shp')  
+unfil_dor = gp.read_file(gdrive+'HPC_runs_fixed/analyzed_data/2010/all_basins_segGeo.shp')  
 unfil_dor = unfil_dor[["Hydroseq", "DOR"]] 
 # unfil_dor = unfil_dor[["Hydroseq", "geometry", "DOR"]] 
 
 
-test = grand_dor.merge(unfil_dor, on="Hydroseq", suffixes=('_grand', '_unfil'))
-test['percent_dor'] = 'nan'
-for i in test.index:
-    # if test['DOR_grand'][i] == 0 and test['DOR_unfil'][i] == 0 or test['DOR_unfil'][i] == 0:
-    if test['DOR_unfil'][i] == 0:
-        test.loc[i, 'percent_dor'] = 0
+grand_merge = grand_dor.merge(unfil_dor, on="Hydroseq", suffixes=('_grand', '_unfil'))
+grand_merge['percent_dor'] = 'nan'
+
+for i in grand_merge.index:
+    if grand_merge['DOR_unfil'][i] == 0 and grand_merge['DOR_grand'][i] == 0:
+        grand_merge.loc[i, 'percent_dor'] = 1.0
+    elif grand_merge['DOR_unfil'][i] == -1:
+        grand_merge.loc[i, 'percent_dor'] = -1.0
     else:
-        test.loc[i, 'percent_dor'] = test.loc[i, 'DOR_grand']/test.loc[i, 'DOR_unfil']
+        grand_merge.loc[i, 'percent_dor'] = grand_merge.loc[i, 'DOR_grand']/grand_merge.loc[i, 'DOR_unfil']
 
-# test['percent_dor'] = test['DOR_grand']/test['DOR_unfil']
-test['percent_dor'].fillna(-1, inplace=True)
-test.to_file("/Users/rachelspinti/Documents/grand_percent_testdor.shp")
-
-# if grand_dor.Hydroseq == unfil_dor.Hydroseq:
-#         grand_dor["percent_dor"] = grand_dor.DOR/unfil_dor.DOR
-
-# for i in grand_dor.index:
-#     for j in unfil_dor.index:
-#         if grand_dor.Hydroseq[i] == unfil_dor.Hydroseq[j]:
-#             grand_dor.percent_dor[i] = grand_dor.DOR[i]/unfil_dor.DOR[j]
-#             # y = unfil_dor.DOR[i]
-#             # print("grand", x)
-            # # print("unfil", y)
-            # grand_dor.percent_dor[i] = x
-
-# grand_dor = grand_dor.sort_values(by='Hydroseq', ascending=True)
-# unfil_dor = unfil_dor.sort_values(by='Hydroseq', ascending=True)
-# grand_dor["percent_dor"] = 0
-
-# for i in grand_dor.index:
-#     if unfil_dor.DOR[i] == 0:
-#         grand_dor["percent_dor"][i] = -1 
-#     else:
-#         grand_dor["percent_dor"][i] = grand_dor.DOR[i]/unfil_dor.DOR[i]
-# grand_dor["percent_dor"] = grand_dor.DOR/unfil_dor.DOR
-# grand_dor.replace(np.inf, np.nan, inplace=True)
-# grand_dor.fillna(-1, inplace = True)
-# for i in grand_dor.index:
-#     if grand_dor.Hydroseq[i] == unfil_dor.Hydroseq[i]:
-#         grand_dor.percent_dor[i] = grand_dor.DOR[i]/unfil_dor.DOR[i]
-
-# for i in grand_dor.index:
-#     if grand_dor.Hydroseq[i] == unfil_dor.Hydroseq:
-#         grand_dor.percent_dor[i] = grand_dor.DOR[i]/unfil_dor.DOR
-
-# grand_dor.to_file("/Users/rachelspinti/Documents/grand_percent_dor.shp")
-# grand_dor.to_file(gdrive+results_folder+"grand_percent_dor.shp")
+# grand_merge.to_file("/Users/rachelspinti/Documents/grand_percent_dor.shp")
+grand_merge.to_file(gdrive+results_folder+"grand_percent_dor.shp")
 
 print("\n"+"** Analysis Complete **")
 # %%
