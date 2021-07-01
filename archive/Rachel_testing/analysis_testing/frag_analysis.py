@@ -21,7 +21,7 @@ results_folder2 = 'HPC_runs_fixed/analyzed_data/'
 # basin_ls = ['California', 'Colorado', 'Columbia', 'Great_Basin', 'Great_Lakes', 'Gulf_Coast','Mississippi', 'North_Atlantic', 'Red', 'Rio_Grande','South_Atlantic']
 # basin_ls = ['California', "Colorado"]
 
-basin_ls = ['California', 'Great_Basin', 'Colorado', 'Columbia', 'Rio_Grande', 'Mississippi', 'Red', 'Gulf_Coast', 'Great_Lakes', 'South_Atlantic', 'North_Atlantic']
+basin_ls = ['Columbia', 'California', 'Great_Basin', 'Colorado',  'Rio_Grande', 'Gulf_Coast', 'Mississippi', 'Red',  'Great_Lakes', 'North_Atlantic', 'South_Atlantic']
 #%%
 #Function to get info by fragment length
 def make_df(basin):
@@ -50,7 +50,7 @@ def make_df(basin):
 def make_tot_df(basin):
     years = ["no_dams", "1920", "1950", "1980", "2010"]
     bins = [0, 1, 10, 100, 1000, 10000, 100000, 1000000]
-    labels = [str(x) for x in bins[1:]]
+    # labels = [str(x) for x in bins[1:]]
     basin_df = pd.DataFrame(0, index=years, columns=["total_frags"])
 
     for year in years:
@@ -65,48 +65,48 @@ upper_limit=[2500, 18000, 4500, 800, 300, 30, 3]
 labels =["Pre-development", "1920", "1950", "1980", "2010"]
 # lengths = [1]
 c = ['#9e0142', '#d53e4f', '#f46d43', '#fdae61', '#fee08b', '#ffffa3', '#c7f58c', '#abdda4', '#66c2a5', '#3288bd', '#5e4fa2']
-# for num, l in enumerate(lengths):
-#     # color=iter(cm.gist_rainbow(np.linspace(0,0.8,len(basin_ls))))
-#     for count, basin in enumerate(basin_ls):
-#         df = make_df(basin)
-#         # c=next(color)
+for num, l in enumerate(lengths):
+    # color=iter(cm.gist_rainbow(np.linspace(0,0.8,len(basin_ls))))
+    for count, basin in enumerate(basin_ls):
+        df = make_df(basin)
+        # c=next(color)
         
-#         # plt.plot(df[1].index, df[1][str(l)], label = basin, color=c[count], marker='o')
-#         plt.plot(df[1].index, df[1][str(l)], label = basin, color=c[count], marker='o', linestyle="--")
-#         plt.xlabel("Time")
-#         plt.xticks(np.arange(0,len(labels)),labels=labels)
-#         plt.ylabel("Change in number of fragments")
-#         # plt.yscale("symlog")
-#         plt.ylim(0,upper_limit[num])
-#         # plt.yticks([0, 1, 10, 100, 1000, 10000, 100000])
-#         plt.title("Change in number of fragments "+str(l)+" km long")
-#     plt.tight_layout(rect=[0, 0, 0.72, 1])    
-#     plt.legend(bbox_to_anchor=(1.05, 1))
+        # plt.plot(df[1].index, df[1][str(l)], label = basin, color=c[count], marker='o')
+        plt.plot(df[1].index, df[1][str(l)], label = basin, color=c[count], marker='o', linestyle="--")
+        plt.xlabel("Time")
+        plt.xticks(np.arange(0,len(labels)),labels=labels)
+        plt.ylabel("Change in number of fragments")
+        # plt.yscale("symlog")
+        plt.ylim(0,upper_limit[num])
+        # plt.yticks([0, 1, 10, 100, 1000, 10000, 100000])
+        plt.title("Change in number of fragments "+str(l)+" km long")
+    plt.tight_layout(rect=[0, 0, 0.72, 1])    
+    plt.legend(bbox_to_anchor=(1.05, 1))
     
 
-#     # plt.savefig(gdrive+results_folder+"/len_analysis/nabd/len_"+str(l)+".png", dpi=150)
-#     plt.savefig(gdrive+results_folder2+"len_analysis/grand/len_"+str(l)+".png", dpi=150)
-#     plt.show()
+    # plt.savefig(gdrive+results_folder+"/len_analysis/nabd/len_"+str(l)+".png", dpi=150)
+    # plt.savefig(gdrive+results_folder2+"len_analysis/grand/len_"+str(l)+".png", dpi=150)
+    plt.show()
 
-for count, basin in enumerate(basin_ls):
-    tot_df=make_tot_df(basin)
+# for count, basin in enumerate(basin_ls):
+#     tot_df=make_tot_df(basin)
     
-    # plt.plot(tot_df.index, tot_df["total_frags"], label = basin, color=c[count], marker='o')
-    plt.plot(tot_df.index, tot_df["total_frags"], label = basin, color=c[count], marker='o', linestyle="--")
-    plt.xlabel("Time")
-    plt.xticks(np.arange(0,len(labels)),labels=labels)
-    plt.ylabel("Change in number of fragments")
-    # plt.yscale("symlog")
-    plt.ylim(0,30000)
-    # plt.yticks([0, 1, 10, 100, 1000, 10000, 100000])
-    plt.title("Total change in number of fragments")
-plt.tight_layout(rect=[0, 0, 0.72, 1])
-plt.legend(bbox_to_anchor=(1.05, 1))
+#     plt.plot(tot_df.index, tot_df["total_frags"], label = basin, color=c[count], marker='o')
+#     # plt.plot(tot_df.index, tot_df["total_frags"], label = basin, color=c[count], marker='o', linestyle="--")
+#     plt.xlabel("Time")
+#     plt.xticks(np.arange(0,len(labels)),labels=labels)
+#     plt.ylabel("Change in number of fragments")
+#     # plt.yscale("symlog")
+#     plt.ylim(0,30000)
+#     # plt.yticks([0, 1, 10, 100, 1000, 10000, 100000])
+#     plt.title("Total change in number of fragments")
+# plt.tight_layout(rect=[0, 0, 0.72, 1])
+# plt.legend(bbox_to_anchor=(1.05, 1))
 
 
 # plt.savefig(gdrive+results_folder+"/len_analysis/nabd/total_frag.png", dpi=150)
-plt.savefig(gdrive+results_folder2+"/len_analysis/grand/total_frag.png", dpi=150)
-plt.show()
+# plt.savefig(gdrive+results_folder2+"/len_analysis/grand/total_frag2.png", dpi=150)
+# plt.show()
 
 # %%
 

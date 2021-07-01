@@ -10,8 +10,8 @@ basin_ls = ['California', 'Colorado', 'Columbia', 'Great_Basin', 'Great_Lakes',
 'Gulf_Coast','Mississippi', 'North_Atlantic', 'Red', 'Rio_Grande','South_Atlantic']
 
 ## folder on the GDrive to save output files to
-data_folder = 'HPC_runs_fixed/processed_data/grand_dams/'
-results_folder = 'HPC_runs_fixed/analyzed_data/grand_dams/'
+data_folder = 'HPC_runs_fixed/processed_data/grand_dams/2010'
+results_folder = 'HPC_runs_fixed/analyzed_data/grand_dams/2010/'
 gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/Rachel/Research/Data/bifurcation_data_repo/" 
 
 # # Analyses
@@ -67,7 +67,7 @@ gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/
 # grand_dor = gp.read_file(gdrive+results_folder+"all_basins_segGeo.shp")
 grand_dor = gp.read_file(gdrive+results_folder+"all_basins_segGeo.shp")
 grand_dor = grand_dor[["Hydroseq", "geometry", "DOR", "line_width"]]  #filter to columns we care about
-
+print("GRanD read")
 
 # grand_seggeo = grand_seggeo[["Hydroseq", "geometry", "DOR", "line_width"]] 
 # grand_seggeo["percent_dor"] = 0  #add column
@@ -75,18 +75,31 @@ grand_dor = grand_dor[["Hydroseq", "geometry", "DOR", "line_width"]]  #filter to
 unfil_dor = gp.read_file(gdrive+'HPC_runs_fixed/analyzed_data/2010/all_basins_segGeo.shp')  
 unfil_dor = unfil_dor[["Hydroseq", "DOR"]] 
 # unfil_dor = unfil_dor[["Hydroseq", "geometry", "DOR"]] 
+print("NABD read")
 
 
 grand_merge = grand_dor.merge(unfil_dor, on="Hydroseq", suffixes=('_grand', '_unfil'))
 grand_merge['percent_dor'] = 'nan'
+grand_merge['per_dor_small'] = 'nan'
+grand_merge["new_width2"] = 'nan'
+print("Merge completed")
 
 for i in grand_merge.index:
-    if grand_merge['DOR_unfil'][i] == 0 and grand_merge['DOR_grand'][i] == 0:
-        grand_merge.loc[i, 'percent_dor'] = 1.0
+    # if grand_merge['DOR_unfil'][i] == 0 and grand_merge['DOR_grand'][i] == 0:
+    #     grand_merge.loc[i, 'percent_dor'] = 1.0
+    if grand_merge['DOR_unfil'][i] == 0:
+        grand_merge.loc[i, 'percent_dor'] = -1.0
     elif grand_merge['DOR_unfil'][i] == -1:
         grand_merge.loc[i, 'percent_dor'] = -1.0
     else:
         grand_merge.loc[i, 'percent_dor'] = grand_merge.loc[i, 'DOR_grand']/grand_merge.loc[i, 'DOR_unfil']
+
+for i in grand_merge.index:
+    grand_merge.loc[i, 'per_dor_small'] = 1-grand_merge.loc[i, 'percent_dor']
+    if grand_merge.loc[i, 'line_width'] < 0.5:
+        grand_merge.loc[i, 'new_width2']=grand_merge.loc[i, 'line_width']/2
+    else:
+        grand_merge.loc[i, 'new_width2']=grand_merge.loc[i, 'line_width']
 
 # grand_merge.to_file("/Users/rachelspinti/Documents/grand_percent_dor.shp")
 grand_merge.to_file(gdrive+results_folder+"grand_percent_dor.shp")
