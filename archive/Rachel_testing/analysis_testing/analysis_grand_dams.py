@@ -93,6 +93,7 @@ for i in grand_merge.index:
         grand_merge.loc[i, 'percent_dor'] = -1.0
     else:
         grand_merge.loc[i, 'percent_dor'] = grand_merge.loc[i, 'DOR_grand']/grand_merge.loc[i, 'DOR_unfil']
+    
 
 for i in grand_merge.index:
     grand_merge.loc[i, 'per_dor_small'] = 1-grand_merge.loc[i, 'percent_dor']
