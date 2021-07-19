@@ -1,0 +1,77 @@
+
+import geopandas as gp, pandas as pd, numpy as np
+import create_csvs as crc, huc_merge as hm
+
+## Folders
+data_folder = 'HPC_runs_fixed/processed_data/'
+results_folder = 'HPC_runs_fixed/analyzed_data/'
+
+# data_folder = 'HPC_runs_fixed/processed_data/grand_dams'
+# results_folder = 'HPC_runs_fixed/analyzed_data/grand_dams'
+gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/Rachel/Research/Data/bifurcation_data_repo/" 
+
+
+## Basin lists 
+basin_ls = ['California', 'Colorado', 'Columbia', 'Great_Basin', 'Great_Lakes',
+'Gulf_Coast','Mississippi', 'North_Atlantic', 'Red', 'Rio_Grande','South_Atlantic']
+# basin_ls = ['Red']
+
+
+# years = ['no_dams', '1920', '1950', '1980', '2010']
+years = ['2010']
+
+
+
+## DOR fraction
+grand_dor = gp.read_file(gdrive+results_folder+"nabd_basins_segGeo.shp")
+grand_dor = grand_dor[["Hydroseq", "geometry", "DOR", "line_width", "new_width2"]]  #filter to columns we care about
+print("GRanD read")
+
+nabd_dor = gp.read_file(gdrive+'HPC_runs_fixed/analyzed_data/2010/nabd_basins_segGeo.shp')  
+nabd_dor = nabd_dor[["Hydroseq", "DOR"]] 
+# nabd_dor = nabd_dor[["Hydroseq", "geometry", "DOR"]] 
+print("NABD read")
+
+grand_merge = grand_dor.merge(nabd_dor, on="Hydroseq", suffixes=('_grand', '_nabd'))
+grand_merge['perc_big'] = 'nan'
+grand_merge['perc_small'] = 'nan'
+grand_merge["new_width2"] = 'nan'
+print("Merge completed")
+
+for i in grand_merge.index:
+    # if grand_merge['DOR_nabd'][i] == 0 and grand_merge['DOR_grand'][i] == 0:
+    #     grand_merge.loc[i, 'percent_dor'] = 1.0
+    if grand_merge['DOR_nabd'][i] == 0:
+        grand_merge.loc[i, 'perc_big'] = -1.0
+    elif grand_merge['DOR_nabd'][i] == -1:
+        grand_merge.loc[i, 'perc_big'] = -1.0
+    else:
+        grand_merge.loc[i, 'perc_big'] = grand_merge.loc[i, 'DOR_grand']/grand_merge.loc[i, 'DOR_nabd']
+    grand_merge.loc[i, 'perc_small'] = 1-grand_merge.loc[i, 'perc_big']
+
+# grand_merge.to_file("/Users/rachelspinti/Documents/grand_percent_dor.shp")
+grand_merge.to_file(gdrive+results_folder+"grand_percent_dor.shp")
+
+
+## HUC 8 fraction
+# huc8_control = gp.read_file(gdrive+"HPC_runs_fixed/processed_data/nabd_basins_unfiltered/huc8_indices.shp")
+# huc8_control = huc8_control[["HUC8_no", "geometry", "Norm_sto_1", "Name", "States"]]
+
+# drop_cols = [str(i) for i in huc8.columns]
+# drop_cols.remove("HUC8_no")
+# drop_cols.remove("Norm_stor_sum")
+# drop_cols.remove("geometry")
+# huc8 = huc8.drop(columns = drop_cols)
+
+# huc8["percent_stor"] = 0
+# huc8[["Name", "States"]] = huc8_control[[ "Name", "States"]]
+
+# for i in huc8.index:
+#     if huc8.HUC8_no[i] == huc8_control.HUC8_no[i]:
+#         huc8["percent_stor"][i] = huc8.Norm_stor_sum[i]/huc8_control.Norm_sto_1[i]    
+#         # huc8["percent_stor"][i] = huc8.Norm_stor_up_outlet[i]/huc8_control.Norm_sto_2[i]
+
+# huc8.percent_stor.fillna(-1, inplace=True)
+# huc8.to_file(gdrive+results_folder+'huc8_percent_stor_grand.shp')
+        
+# print("\n" +"HUC8 storage difference analysis complete")
