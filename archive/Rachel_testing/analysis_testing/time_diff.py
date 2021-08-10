@@ -14,50 +14,55 @@ def frag_diff(gdrive, results_folder):
     # read_results = read_huc8_shp(gdrive, folder)
     # natural bifurcation
     natural = gp.read_file(gdrive+results_folder+"no_dams/huc8_indices_no_dams.shp")
+    # natural['LENGTHKM_l'] = pd.to_numeric(natural['LENGTHKM_l'])
+    # df["a"] = pd.to_numeric(df["a"])
+    natural['LENGTHKM_l'].fillna(0,inplace=True)
+    natural.to_file(gdrive+results_folder+"no_dams/huc8_no_dams_frag_diff.shp")
 
     #before 1920 bifurcation
     b1920 = gp.read_file(gdrive+results_folder+"1920/huc8_indices_1920.shp")
     b1920["frag_diff"] = b1920["LENGTHKM_l"] -  natural["LENGTHKM_l"]
-    b1920.fillna(0.0)
+    b1920.fillna(0.0,inplace=True)
     b1920.to_file(gdrive+results_folder+"1920/huc8_1920_frag_diff.shp")
     b1920_cum = b1920.copy()  #cumulative fragment difference
     b1920_cum["frag_cudiff"] = b1920["LENGTHKM_l"] -  natural["LENGTHKM_l"]
-    b1920_cum.fillna(0.0)
+    b1920_cum.fillna(0.0,inplace=True)
     b1920_cum.to_file(gdrive+results_folder+"1920/huc8_1920_frag_cudiff.shp")
     print("1920 to shp complete")
 
     #before 1950 bifurcation
     b1950 = gp.read_file(gdrive+results_folder+"1950/huc8_indices_1950.shp")
     b1950["frag_diff"] = b1950["LENGTHKM_l"] -  b1920["LENGTHKM_l"]
-    b1950.fillna(0.0)
+    b1950.fillna(0.0, inplace=True)
     b1950.to_file(gdrive+results_folder+"1950/huc8_1950_frag_diff.shp")
     b1950_cum = b1950.copy()   #cumulative fragment difference
     b1950_cum["frag_cudiff"] = (b1950["LENGTHKM_l"] -  b1920["LENGTHKM_l"])+b1920["frag_diff"]
-    b1950_cum.fillna(0.0)
+    b1950_cum.fillna(0.0,inplace=True)
     b1950_cum.to_file(gdrive+results_folder+"1950/huc8_1950_frag_cudiff.shp")
     print("1950 to shp complete")
 
     #before 1980 bifurcation
     b1980 = gp.read_file(gdrive+results_folder+"1980/huc8_indices_1980.shp")
     b1980["frag_diff"] = b1980["LENGTHKM_l"] -  b1950["LENGTHKM_l"]
-    b1980.fillna(0.0)
+    b1980.fillna(0.0,inplace=True)
     b1980.to_file(gdrive+results_folder+"1980/huc8_1980_frag_diff.shp")
     b1980_cum = b1980.copy()   #cumulative fragment difference
     b1980_cum["frag_cudiff"] = (b1980["LENGTHKM_l"] -  b1950["LENGTHKM_l"])+b1920["frag_diff"]+b1950["frag_diff"]
-    b1980_cum.fillna(0.0)
+    b1980_cum.fillna(0.0,inplace=True)
     b1980_cum.to_file(gdrive+results_folder+"1980/huc8_1980_frag_cudiff.shp")
     print("1980 to shp complete")
 
     #2010 bifurcation
     unfil = gp.read_file(gdrive+results_folder+"2010/huc8_indices_2010.shp")
     unfil["frag_diff"] = unfil["LENGTHKM_l"] -  b1980["LENGTHKM_l"]
-    unfil.fillna(0.0)
+    unfil.fillna(0.0,inplace=True)
     unfil.to_file(gdrive+results_folder+"2010/huc8_2010_frag_diff.shp")
     unfil_cum = unfil.copy()   #cumulative fragment difference
     unfil_cum["frag_cudiff"] = (unfil["LENGTHKM_l"] -  b1980["LENGTHKM_l"])+b1920["frag_diff"]+b1950["frag_diff"]+b1980["frag_diff"]
-    unfil_cum.fillna(0.0)
+    unfil_cum.fillna(0.0,inplace=True)
     unfil_cum.to_file(gdrive+results_folder+"2010/huc8_2010_frag_cudiff.shp")
     print("2010 to shp complete")
+    # return natural
 
 def stor_diff(gdrive, folder):
     # natural bifurcation

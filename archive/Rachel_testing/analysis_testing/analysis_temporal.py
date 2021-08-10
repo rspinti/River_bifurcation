@@ -1,7 +1,7 @@
-
+# %%
 import geopandas as gp, pandas as pd, numpy as np
 import create_csvs as crc, huc_merge as hm, time_diff as td
-
+# %%
 # Specifying inputs
 ## Basin lists 
 #all the basins
@@ -65,7 +65,7 @@ gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/
 #__________________________________________________________
 # Number of fragments by HUC 8
 td.frag_diff(gdrive, results_folder)
-
+# nat = td.frag_diff(gdrive, results_folder)
 
 print("\n"+"** Analysis Complete **")
 # %%
