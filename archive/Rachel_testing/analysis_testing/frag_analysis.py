@@ -93,40 +93,44 @@ xlabels =["PD", "1920", "1950", "1980", "2012"]
 basin_abr = ["GB", "CO", "RG", "CA", "GC", "RE", "MI", "CB", "SA", "GL", "NA"]
 c = ['#9e0142', '#d53e4f', '#f46d43', '#fdae61', '#fff66f', '#d1ef77', '#79ce6b', '#5bbb9d', '#3288bd', '#3952aa', '#4f438e']
 
-### Figure 1
-fig, axes = plt.subplots(4, 2, figsize=(20, 25))
-pad=5
+# ### Figure 1
+# fig, axes = plt.subplots(4, 2, figsize=(20, 25))
+# pad=5
 
-# for num, l in enumerate(lengths):
-for count, basin in enumerate(basin_ls):
-    df = make_df(basin, years, bin_ls, gdrive, results_folder)
-    for row, l in enumerate(lengths):
-        #NABD
-        axes[row,0].plot(df[1].index, df[1][str(l)], label = basin, color=c[count], marker='o')
-        axes[row,0].set_ylim(0, upper_limit[row])
-        # axes[row,0].set_ylim(0, smaller_limit[row])
-        # axes[row,0].set_title("Fragment length "+str(bin_ls[row])+" - "+str(l)+" km", weight="bold")
-        axes[0,0].set_title("Number of fragments for all dams", weight="bold", size=32)
-        axes[row,0].set_xticklabels(xlabels)
-        # axes[row,0].set_ylabel("Number of fragments", weight="bold", size=30)
-        axes[row,0].annotate("Fragment length "+str(bin_ls[row])+" - "+str(l)+" km", xy=(0, 0.5), xytext=(-axes[row,0].yaxis.labelpad - pad, 0),
-                xycoords=axes[row,0].yaxis.label, textcoords='offset points',
-                size=30, ha='right', va='center', rotation=90)
-        axes[row, 0].tick_params(axis = 'both', which = 'major', labelsize = 28, width=2.5, length=5)
+# # for num, l in enumerate(lengths):
+# for count, basin in enumerate(basin_ls):
+#     df = make_df(basin, years, bin_ls, gdrive, results_folder)
+#     for row, l in enumerate(lengths):
+#         #NABD
+#         axes[row,0].plot(df[1].index, df[1][str(l)], label = basin, color=c[count], marker='o', lw=4, ms=15)
+#         axes[row,0].set_ylim(0, upper_limit[row])
+#         # axes[row,0].set_ylim(0, smaller_limit[row])
+#         # axes[row,0].set_title("Fragment length "+str(bin_ls[row])+" - "+str(l)+" km", weight="bold")
+#         axes[0,0].set_title("Number of fragments\nfor all dams", weight="bold", size=32)
+#         axes[row,0].set_xticklabels(xlabels)
+#         # axes[row,0].set_ylabel("Number of fragments", weight="bold", size=30)
+#         # axes[row,0].annotate("Fragment length\n "+str(bin_ls[row])+" - "+str(l)+" km", xy=(0, 0.5), xytext=(-axes[row,0].yaxis.labelpad - pad, 0),
+#         #         xycoords=axes[row,0].yaxis.label, textcoords='offset points',
+#         #         size=30, ha='right', va='center', rotation=90)
+#         axes[row,0].annotate(str(bin_ls[row])+" - "+str(l)+" km", xy=(0, 0.5), xytext=(-axes[row,0].yaxis.labelpad - pad, 0),
+#                 xycoords=axes[row,0].yaxis.label, textcoords='offset points',
+#                 size=30, ha='right', va='center', rotation=90)
+#         axes[row, 0].tick_params(axis = 'both', which = 'major', labelsize = 28, width=2.5, length=5)
 
-        #Small dams
-        axes[row,1].plot(df[4][1:].index, df[4][str(l)][1:], label = basin, color=c[count], marker='o')
-        axes[row,1].set_ylim(0, 1)
-        # axes[row,2].set_title("Fragment length "+str(bin_ls[row])+" - "+str(l)+" km", weight="bold")
-        axes[0,1].set_title("Fraction of fragments from small dams", weight="bold", size=32)
-        axes[row,1].set_xticklabels(xlabels[1:])
-        # axes[row,1].set_ylabel("Fraction of fragments", weight="bold", size=30)
-        # axes[row,2].set_xlabel("Time", weight="bold")
-        axes[row, 1].tick_params(axis = 'both', which = 'major', labelsize = 28, width=2.5, length=5)
+#         #Small dams
+#         axes[row,1].plot(df[4][1:].index, df[4][str(l)][1:], label = basin, color=c[count], marker= 'o', lw=4, ms=15)
+#         axes[row,1].set_ylim(0, 1)
+#         # axes[row,2].set_title("Fragment length "+str(bin_ls[row])+" - "+str(l)+" km", weight="bold")
+#         axes[0,1].set_title("Fraction of fragments\nfrom small dams", weight="bold", size=32)
+#         axes[row,1].set_xticklabels(xlabels[1:])
+#         # axes[row,1].set_ylabel("Fraction of fragments", weight="bold", size=30)
+#         # axes[row,2].set_xlabel("Time", weight="bold")
+#         axes[row, 1].tick_params(axis = 'both', which = 'major', labelsize = 28, width=2.5, length=5)
 
-plt.tight_layout(rect=[0, 0, 0.94, 1])  
-# # plt.savefig(gdrive+results_folder+"frag_len4x4_smally.png", dpi=150)
-# plt.savefig(gdrive+results_folder+"frag_len4x2_bigy.png", dpi=150)
+# plt.tight_layout(rect=[0, 0, 0.94, 1])  
+# # # plt.savefig(gdrive+results_folder+"frag_len4x4_smally.png", dpi=150)
+# # plt.savefig(gdrive+results_folder+"frag_len4x2_bigy.png", dpi=150)
+# plt.savefig(gdrive+results_folder+"frag_len4x2.png", dpi=150)
 
 # ### Figure 2
 # fig2, axes2 = plt.subplots(1, 2, figsize=(25, 10))
@@ -135,8 +139,8 @@ plt.tight_layout(rect=[0, 0, 0.94, 1])
 
 # for count, basin in enumerate(basin_ls):
 #     tot_df = make_tot_df(basin, years, gdrive, results_folder)
-#     axes2[0].plot(tot_df[0].index, tot_df[0]["total_frags"], label = basin_abr[count], color=c[count], marker='o')
-#     axes2[1].plot(tot_df[2].index[1:], tot_df[2]["percent_small"][1:], label = basin_abr[count], color=c[count], marker='o')
+#     axes2[0].plot(tot_df[0].index, tot_df[0]["total_frags"], label = basin_abr[count], color=c[count], marker='o', lw=4, ms=15)
+#     axes2[1].plot(tot_df[2].index[1:], tot_df[2]["percent_small"][1:], label = basin_abr[count], color=c[count], marker='o', lw=4, ms=15)
 #     axes2[1].set_ylim(0, 1)
 
 #     axes2[0].set_ylabel("Total number of fragments", weight="bold", size=34)
@@ -146,17 +150,93 @@ plt.tight_layout(rect=[0, 0, 0.94, 1])
 #     # axes[0].set_title("All dams", weight="bold", size = 32)
 #     # axes[1].set_title("Small dams", weight="bold", size=32)
 
-# plt.tight_layout(rect=[0.04, 0.04, 1, 1])    
+# # plt.tight_layout(rect=[0.04, 0.04, 1, 1])    
 # # plt.legend(bbox_to_anchor=(1, 0.9, 0.5, 0), fontsize=20)
 # # plt.legend(fontsize=28)
 # axes2[0].legend(loc="upper left", fontsize=32)
 # axes2[0].tick_params(axis = 'both', which = 'major', labelsize = 32, width=2.5, length=5)
 # axes2[1].tick_params(axis = 'both', which = 'major', labelsize = 32, width=2.5, length=5)
-# # axes[0].grid(False)
-# # axes[1].grid(False)
-# # plt.legend(loc="upper left", fontsize=20)
+
 # plt.subplots_adjust(wspace = 0.15)
 # plt.savefig(gdrive+results_folder+"tot_frags1x2.png", dpi=150)
+# plt.show()
+#%%
+#3 panel total frags plot
+### Figure 2
+fig2, axes2 = plt.subplots(1, 3, figsize=(35, 15))
+# fig2.text(0.5,0.95, "a.", ha="center", va="center", size = 34, weight="bold")
+# fig2.text(0.985,0.95, "b.", ha="center", va="center", size = 34, weight="bold")
+
+for count, basin in enumerate(basin_ls):
+    tot_df = make_tot_df(basin, years, gdrive, results_folder)
+    axes2[0].plot(tot_df[0].index, tot_df[0]["total_frags"], label = basin_abr[count], color=c[count], marker='o', lw=4, ms=15)
+    axes2[1].plot(tot_df[0].index, tot_df[0]["total_frags"], label = basin_abr[count], color=c[count], marker='o', lw=4, ms=15)
+    axes2[2].plot(tot_df[2].index[1:], tot_df[2]["percent_small"][1:], label = basin_abr[count], color=c[count], marker='o', lw=4, ms=15)
+    axes2[1].set_ylim(0, 10000)
+    axes2[2].set_ylim(0, 1)
+
+    axes2[0].set_ylabel("Total number of fragments", size=34)
+    axes2[1].set_ylabel("Total number of fragments", size=34)
+    axes2[2].set_ylabel("Fraction of fragments from small dams", size=34)
+    axes2[0].set_xticklabels(xlabels)
+    axes2[1].set_xticklabels(xlabels)
+    axes2[2].set_xticklabels(xlabels[1:])
+    # axes[0].set_title("All dams", weight="bold", size = 32)
+    # axes[1].set_title("Small dams", weight="bold", size=32)
+
+plt.tight_layout(rect=[0.04, 0.04, 1, 1])    
+# plt.legend(bbox_to_anchor=(1, 0.9, 0.5, 0), fontsize=20)
+# plt.legend(fontsize=28)
+axes2[0].legend(loc="upper left", fontsize=32)
+axes2[0].tick_params(axis = 'both', which = 'major', labelsize = 32, width=2.5, length=5)
+axes2[1].tick_params(axis = 'both', which = 'major', labelsize = 32, width=2.5, length=5)
+axes2[2].tick_params(axis = 'both', which = 'major', labelsize = 32, width=2.5, length=5)
+
+plt.subplots_adjust(wspace = 0.15)
+plt.savefig(gdrive+results_folder+"tot_frags1x3.png", dpi=150)
+plt.show()
+
+
+#Split axis
+### Figure 2
+# fig2 = plt.figure(figsize=(20,15))
+# ax1= fig2.add_subplot(2,2,1)
+# ax2= fig2.add_subplot(2,2,3)
+# ax3= fig2.add_subplot(1,2,2)
+
+# for count, basin in enumerate(basin_ls):
+#     tot_df = make_tot_df(basin, years, gdrive, results_folder)
+#     ax1.plot(tot_df[0].index, tot_df[0]["total_frags"], label = basin_abr[count], color=c[count], marker='o')
+#     ax2.plot(tot_df[0].index, tot_df[0]["total_frags"], label = basin_abr[count], color=c[count], marker='o')
+#     ax3.plot(tot_df[2].index[1:], tot_df[2]["percent_small"][1:], label = basin_abr[count], color=c[count], marker='o')
+    
+#     ax1.set_ylabel("Total number of fragments", size=34)
+#     ax1.set_ylim(22000, 26000)
+#     ax2.set_ylim(0, 12000)
+#     ax2.set_xticklabels(xlabels)
+#     ax3.set_ylim(0, 1)
+#     ax3.set_xticklabels(xlabels[1:])
+#     ax3.set_ylabel("Fraction of fragments from small dams", size=34)
+
+# ax1.tick_params(axis = 'both', which = 'major', labelsize = 32, width=2.5, length=5)  
+# ax2.tick_params(axis = 'both', which = 'major', labelsize = 32, width=2.5, length=5)
+# ax3.tick_params(axis = 'both', which = 'major', labelsize = 32, width=2.5, length=5)
+
+# #Split the axis
+# ax1.spines.bottom.set_visible(False)
+# ax2.spines.top.set_visible(False)
+# ax1.xaxis.tick_top()
+# ax1.tick_params(labeltop=False)  # don't put tick labels at the top
+# ax2.xaxis.tick_bottom()
+# d = .3  # proportion of vertical to horizontal extent of the slanted line
+# kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12,
+#             linestyle="none", color='k', mec='k', mew=1, clip_on=False)
+# ax1.plot([0, 1], [0, 0], transform=ax1.transAxes, **kwargs)
+# ax2.plot([0, 1], [1, 1], transform=ax2.transAxes, **kwargs)
+# ax1.legend(loc="upper left", fontsize=32)
+
+# plt.subplots_adjust(wspace = 0.15)
+# # plt.savefig(gdrive+results_folder+"tot_frags_split.png", dpi=150)
 plt.show()
 #%%
 # Old plotting
