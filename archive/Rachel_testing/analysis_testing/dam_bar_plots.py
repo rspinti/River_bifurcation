@@ -26,7 +26,7 @@ c_nabd = ['#9e0142', '#d53e4f', '#f46d43', '#fdae61', '#fff66f', '#d1ef77', '#79
 c_grand = ['#740030', '#842532', '#9a422a', '#98683a', '#afa94c', '#86994c', '#416e39', '#326857', '#1b4c69', '#213063', '#2a244e']
 
 fig, axs = plt.subplots(4, 1, sharex=True, sharey=False, figsize=(25, 30))
-fig.subplots_adjust(hspace=0.05)
+fig.subplots_adjust(hspace=0.05, wspace=0.2)
 pad=5
 for count, basin in enumerate(basin_ls):
     #GRanD
@@ -52,16 +52,18 @@ for count, basin in enumerate(basin_ls):
     # ylabels0 = ['2.3e$^4$', '2.4e$^4$', '2.5e$^4$']
     # axs[0].set_yticklabels(ylabels0)
     axs[0].ticklabel_format(axis='y', style='sci', scilimits=(0,0))
+    axs[0].yaxis.get_offset_text().set_fontsize(70)
     axs[0].tick_params(axis = 'both', which = 'major', labelsize = 70)
     axs[0].set_ylim(23000,25000)
     # ylabels1 = ['0','5x10$^3$','1x10$^4$']
     # ylabels1 = ['0','5e$^3$','1e$^4$']
     # axs[1].set_yticklabels(ylabels1)
     axs[1].ticklabel_format(axis='y', style='sci', scilimits=(0,0))
+    # axs[1].yaxis.get_offset_text().set_fontsize(70)
     axs[1].tick_params(axis = 'both', which = 'major', labelsize = 70)
     axs[1].set_ylim(0,10000)
     axs[1].set_xticklabels(basin_abr)
-    fig.text(0.0001,0.76, "Total number of dams", ha="center", va="center", size = 72, rotation=90)
+    fig.text(0.0001,0.76, "Total number of dams", ha="center", va="center", size = 72, weight='bold', rotation=90)
     # axs[1].annotate("Total number of dams", xy=(0, 0.5), xytext=(-axs[1].yaxis.labelpad - pad, 0),
     #             xycoords=axs[1].yaxis.label, textcoords='offset points',
     #             size=30, ha='right', va='center', rotation=90)
@@ -105,16 +107,18 @@ for count, basin in enumerate(basin_ls):
     # ylabels2 = ['1.8e$^5$','1.9e$^5$','2e$^5$']
     # axs[2].set_yticklabels(ylabels2)
     axs[2].ticklabel_format(axis='y', style='sci', scilimits=(0,0))
+    axs[2].yaxis.get_offset_text().set_fontsize(70)
     axs[2].tick_params(axis = 'both', which = 'major', labelsize = 70)
     axs[2].set_ylim(180000,200000)
     # ylabels3 = ['0','5x10$^3$','1x10$^4$']
     # ylabels3 = ['0','5e$^3$','1e$^4$']
     # axs[3].set_yticklabels(ylabels3)
     axs[3].ticklabel_format(axis='y', style='sci', scilimits=(0,0))
+    # axs[3].yaxis.get_offset_text().set_fontsize(70)
     axs[3].tick_params(axis='both', which='major', labelsize=70)
     axs[3].set_ylim(0,130000)
-    axs[3].set_xlabel("Basin", size=72)
-    fig.text(0.0000001,0.3, "Total storage (MCM)", ha="center", va="center", size = 72, rotation=90)
+    axs[3].set_xlabel("Basin", size=72, weight='bold')
+    fig.text(0.0000001,0.3, "Total storage (MCM)", ha="center", va="center", size = 72, weight = 'bold', rotation=90)
     # axs[2].set_ylabel("Total storage (MCM)", size=62)
 
     #Adding the percentage of small dams
@@ -149,9 +153,10 @@ for count, basin in enumerate(basin_ls):
     axs[2].plot([0, 1], [0, 0], transform=axs[2].transAxes, **kwargs)
     axs[3].plot([0, 1], [1, 1], transform=axs[3].transAxes, **kwargs)
 
-    plt.tight_layout()
+    plt.tight_layout(rect=[0.05, 0, 0.95, 1])
+    # plt.tight_layout()
     # plt.show()
-    plt.savefig(gdrive+results_folder+"bar_plots/together.png")
+    plt.savefig(gdrive+results_folder+"bar_plots/together.png", bbox_inches='tight')
 
  # %%
 ## Old plotting stuff
