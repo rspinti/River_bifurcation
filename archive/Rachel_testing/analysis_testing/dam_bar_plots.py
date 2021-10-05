@@ -1,7 +1,8 @@
 #%%
-import geopandas as gp, pandas as pd, numpy as np, matplotlib.pyplot as plt, matplotlib.ticker as mtick
+import geopandas as gp, pandas as pd, numpy as np, matplotlib.pyplot as plt, matplotlib.ticker as mtick, seaborn as sns
 from numpy.core.fromnumeric import size
 from decimal import Decimal, getcontext
+# sns.set_style("ticks", {"axes.facecolor": ".8"})
 # %%
 ## Where to pull stuff from
 gdrive = "/Volumes/GoogleDrive/My Drive/Condon_Research_Group/Research_Projects/Rachel/Research/Data/bifurcation_data_repo/" 
@@ -27,6 +28,7 @@ c_grand = ['#740030', '#842532', '#9a422a', '#98683a', '#afa94c', '#86994c', '#4
 
 fig, axs = plt.subplots(4, 1, sharex=True, sharey=False, figsize=(25, 30))
 fig.subplots_adjust(hspace=0.05, wspace=0.2)
+fig.patch.set_alpha(0)
 pad=5
 for count, basin in enumerate(basin_ls):
     #GRanD

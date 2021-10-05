@@ -5,8 +5,8 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
     """Create stream fragments from stream segments based on dam locations.
 
     This function traverses through a stream network using NHD stream segment
-    IDs delineating stream fragments that are divide by dams (refer to xx)
-    for details on stream fragment definition.  This function requires a databse
+    IDs delineating stream fragments that are divided by dams (refer to xx)
+    for details on stream fragment definition.  This function requires a database
     of stream segments where each stream segment (1) a unique identifier and
     identified upstream and downstream segments.  Additionaly, dams must be mapped
     to stream segments and have their own unique identifiers. 
@@ -39,13 +39,13 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
         segments (pandas.DataFrame): An updated dataframe with a fragments column.
     """
     
-    # Add a column for Fragment #'s and initilze with the DamIDs
+    # Add a column for Fragment #'s and initialize with the DamIDs
     segments['Frag'] = segments['DamID']
     #print(segments['Frag'])
 
 
     # if the subwatershed option is true any segment which is not the
-    # downstream neigbhor of another segment is  identified as a headwater
+    # downstream neighbor of another segment is  identified as a headwater
     # If not only grab those segments with an upstream  hydroseq = 0
     if subwatershed:
         intersect = np.intersect1d(segments.index, segments.DnHydroseq.values)
@@ -61,7 +61,7 @@ def make_fragments(segments, exit_id=999000, verbose=False, subwatershed=True):
 
     snum = 0  # Counter for the segment starting points -- just for print purposes
     while len(queue) > 0:
-        # Initialiazation for starting segment:
+        # Initialization for starting segment:
         step = 0  # start a counter for steps down the fragment
         snum = snum + 1
         temploc = queue.index[0]  # start with the segment at the top of the queue
