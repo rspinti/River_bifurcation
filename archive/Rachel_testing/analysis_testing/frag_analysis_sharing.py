@@ -10,7 +10,10 @@ data_folder = 'final_analysis/processed_data/'
 results_folder = 'final_analysis/analyzed_data/len_analysis/'
 huc2 = gp.read_file(gdrive+"hucs/huc2_clipped.shp")
 
-basin_ls = ['Great_Basin', 'Colorado', 'Rio_Grande', 'California', 'Gulf_Coast', 'Red', 'Mississippi', 'Columbia', 'South_Atlantic', 'Great_Lakes', 'North_Atlantic']
+basin_ls_dict = ['Great_Basin', 'Colorado', 'Rio_Grande', 'California', 'Gulf_Coast', 'Red', 'Mississippi', 'Columbia', 'South_Atlantic', 'Great_Lakes', 'North_Atlantic', "all_basins"]
+basin_ls = ["all_basins"]
+# basin_ls = ['South_Atlantic', 'North_Atlantic', "all_basins"]
+# basin_ls = ['Great_Basin', 'Rio_Grande', 'South_Atlantic', 'North_Atlantic', 'all_basins']
 #%%
 #Function to get info by fragment length
 def make_df(basin, years,  bin_ls, gdrive, results_folder):
@@ -59,8 +62,11 @@ def make_df(basin, years,  bin_ls, gdrive, results_folder):
                 big_diff.loc[year,value] = big_basins.loc[year,value]-big_basins.loc["no_dams",value]
                 # small_diff.loc[year,value] = small_basins.loc[year,value]-small_basins.loc["no_dams",value]
             else:
+                # nabd_diff.loc[year,value]=nabd_basins.loc["no_dams",value]
+                # big_diff.loc[year,value]=big_basins.loc["no_dams",value]
                 nabd_diff.loc[year,value]=0
                 big_diff.loc[year,value]=0
+
                 # small_diff.loc[year,value]=0
     # nabd_basins.to_csv(results_folder+basin+"_nabd_basins.csv")
     nabd_diff.to_csv(gdrive+results_folder+basin+"_nabd_frag_diff.csv")
@@ -110,42 +116,66 @@ def make_tot_df(basin, years, gdrive, results_folder):
 years = ["no_dams", "1920", "1950", "1980", "2010"]
 bin_ls = [0, 10, 100, 1000, 10000]
 lengths = [10, 100, 1000, 10000]
+length_dict={10: '0 - 10 km', 100: '10 - 100 km', 1000: '100 - 1,000 km', 10000: '1,000 - 10,000 km'}
 upper_limit=[20000, 4500, 800, 300]
 smaller_limit = [2000, 700, 300, 100]
 xlabels =["PD", "1920", "1950", "1980", "2012"]
-basin_abr = ["GB", "CO", "RG", "CA", "GC", "RE", "MI", "CB", "SA", "GL", "NA"]
-c = ['#9e0142', '#d53e4f', '#f46d43', '#fdae61', '#fff66f', '#d1ef77', '#79ce6b', '#5bbb9d', '#3288bd', '#3952aa', '#4f438e']
+basin_abr = ["GB", "CO", "RG", "CA", "GC", "RE", "MI", "CB", "SA", "GL", "NA", "CONUS"]
+c = ['#9e0142', '#d53e4f', '#f46d43', '#fdae61', '#fff66f', '#d1ef77', '#79ce6b', '#5bbb9d', '#3288bd', '#3952aa', '#4f438e', 'black']
+basin_ls2 = [i.replace("_", " ") for i in basin_ls_dict[:-1]]
+basin_ls2.append("all_basins")
+# basin_ls2 = ["all_basins"]
+basins_dict = {z[0]: list(z[1:]) for z in zip(basin_ls2, basin_abr, c)}
 
 ### Figure 1
-fig, axes = plt.subplots(4, 2, figsize=(20, 25))
+fig, axes = plt.subplots(4, 2, figsize=(25, 30))
 pad=5
 for count, basin in enumerate(basin_ls):
     df = make_df(basin, years, bin_ls, gdrive, results_folder)
+    
     for row, l in enumerate(lengths):
-        basin = basin.replace("_", " ")
-        select = huc2[huc2['basin']==basin]
-        area = sum(select.AreaSqKm)
-
+        if basin != 'all_basins':
+            basin = basin.replace("_", " ")
+            select = huc2[huc2['basin']==basin]
+            area = sum(select.AreaSqKm)
+            axes[row,0].plot(df[1].index, df[1][str(l)]/area, label = basin, color=basins_dict[basin][1], marker='o', lw=4, ms=15)
+            axes[row,1].plot(df[4][1:].index, df[4][str(l)][1:], label = basin, color=basins_dict[basin][1], marker= 'o', lw=4, ms=15)
+            # print(basin, area)
+        else:
+            select = huc2
+            area = sum(select.AreaSqKm)
+            axes[row,0].plot(df[1].index, df[1][str(l)]/area, label = basin, color=basins_dict[basin][1], linestyle='--', marker='o', lw=4, ms=15)
+            axes[row,1].plot(df[4][1:].index, df[4][str(l)][1:], label = basin, color=basins_dict[basin][1], linestyle='--', marker= 'o', lw=4, ms=15)
+            # print(l)
+            # print(df[4][1:].index, df[4][str(l)][1:])
+            # print(df)
+        # print(df[1].index)
+        # print(df[1][str(l)]/area)
+        2
         #NABD
-        axes[row,0].plot(df[1].index, df[1][str(l)]/area, label = basin, color=c[count], marker='o', lw=4, ms=15)
-        axes[0,0].set_title("Number of fragments\nfor all dams", weight="bold", size=32)
+        # axes[row,0].plot(df[1].index, df[1][str(l)]/area, label = basin, color=c[count], marker='o', lw=4, ms=15)
+        axes[0,0].set_title("Fragment density\nfor all dams", weight="bold", size=32)
         axes[row,0].set_xticklabels(xlabels)
-        axes[row,0].annotate(str(bin_ls[row])+" - "+str(l)+" km", xy=(0, 0.5), xytext=(-axes[row,0].yaxis.labelpad - pad, 0),
+        # axes[row,0].set_ylabel('Fragment density')
+        axes[row,0].annotate(length_dict[l], xy=(0, 0.5), xytext=(-axes[row,0].yaxis.labelpad - pad, 0),
                 xycoords=axes[row,0].yaxis.label, textcoords='offset points',
                 size=30, weight='bold', ha='right', va='center', rotation=90)
+        # axes[row,0].annotate(str(bin_ls[row])+" - "+length_dict[l]+" km", xy=(0, 0.5), xytext=(-axes[row,0].yaxis.labelpad - pad, 0),
+        #         xycoords=axes[row,0].yaxis.label, textcoords='offset points',
+        #         size=30, weight='bold', ha='right', va='center', rotation=90)
         axes[row, 0].tick_params(axis = 'both', which = 'major', labelsize = 28, width=2.5, length=5)
         axes[row, 0].ticklabel_format(axis='y', style='sci', scilimits=(0,0))
         axes[row, 0].yaxis.get_offset_text().set_fontsize(28)
 
         #Small dams
-        axes[row,1].plot(df[4][1:].index, df[4][str(l)][1:], label = basin, color=c[count], marker= 'o', lw=4, ms=15)
-        # axes[row,1].set_ylim(0, 1)
+        # axes[row,1].plot(df[4][1:].index, df[4][str(l)][1:], label = basin, color=c[count], marker= 'o', lw=4, ms=15)
+        axes[row,1].set_ylim(0, 1)
         axes[0,1].set_title("Fraction of fragments\nfrom small dams", weight="bold", size=32)
         axes[row,1].set_xticklabels(xlabels[1:])
         axes[row, 1].tick_params(axis = 'both', which = 'major', labelsize = 28, width=2.5, length=5)
 
 plt.tight_layout(rect=[0, 0, 0.94, 1])  
-# plt.savefig(gdrive+results_folder+"frag_len_dens2.png", dpi=150)
+plt.savefig(gdrive+results_folder+"frag_len_dens_conus.png", dpi=150)
 
 ### Figure 2
 fig2, axes2 = plt.subplots(1, 2, figsize=(25, 10))
@@ -154,12 +184,23 @@ fig2.patch.set_alpha(0)
 
 for count, basin in enumerate(basin_ls):
     tot_df = make_tot_df(basin, years, gdrive, results_folder)
-    basin = basin.replace("_", " ")
-    select = huc2[huc2['basin']==basin]
-    area = sum(select.AreaSqKm)
-    axes2[0].plot(tot_df[0].index, tot_df[0]["total_frags"]/area, label = basin_abr[count], color=c[count], marker='o', lw=4, ms=15)
-    axes2[1].plot(tot_df[2].index[1:], tot_df[2]["percent_small"][1:], label = basin_abr[count], color=c[count], marker='o', lw=4, ms=15)
-    # axes2[1].set_ylim(0, 1)
+    if basin != 'all_basins':
+        basin = basin.replace("_", " ")
+        select = huc2[huc2['basin']==basin]
+        area = sum(select.AreaSqKm)
+        axes2[0].plot(tot_df[0].index, tot_df[0]["total_frags"]/area, label = basins_dict[basin][0], color=basins_dict[basin][1], marker='o', lw=4, ms=15)
+        axes2[1].plot(tot_df[2].index[1:], tot_df[2]["percent_small"][1:], label = basins_dict[basin][0], color=basins_dict[basin][1], marker='o', lw=4, ms=15)
+        # print(basin, area)
+    else:
+        select = huc2
+        area = sum(select.AreaSqKm)
+        axes2[0].plot(tot_df[0].index, tot_df[0]["total_frags"]/area, label = basins_dict[basin][0], color=basins_dict[basin][1], linestyle='--', marker='o', lw=4, ms=15)
+        axes2[1].plot(tot_df[2].index[1:], tot_df[2]["percent_small"][1:], label = basins_dict[basin][0], color=basins_dict[basin][1],linestyle='--', marker='o', lw=4, ms=15)
+        # print(area)
+        # print(tot_df)
+    
+    axes2[0].set_ylim(0, 0.017)
+    axes2[1].set_ylim(0, 1)
 
     axes2[0].set_ylabel("Total fragment density per km$^2$", weight="bold", size=34)
     axes2[1].set_ylabel("Relative change from small dams", weight="bold", size=34)
@@ -168,42 +209,48 @@ for count, basin in enumerate(basin_ls):
     axes2[0].ticklabel_format(axis='y', style='sci', scilimits=(0,0))
     axes2[0].yaxis.get_offset_text().set_fontsize(32)
     
-# plt.tight_layout()  
-plt.legend(bbox_to_anchor=(1, 0.98, 0.1, 0), fontsize=32)
+ 
+plt.legend(bbox_to_anchor=(1, 0.99, 0.1, 0), fontsize=32)
 axes2[0].tick_params(axis = 'both', which = 'major', labelsize = 32, width=2.5, length=5)
 axes2[1].tick_params(axis = 'both', which = 'major', labelsize = 32, width=2.5, length=5)
 
+plt.tight_layout(rect=[0, 0, 0.94, 0.95]) 
 # plt.savefig(gdrive+results_folder+"tot_frags1x2_dens2.png", dpi=150)
-plt.savefig(gdrive+results_folder+"tot_frags1x2_dens.png", dpi=150)
-# %%
-### Figure 2
-fig2, ax2 = plt.subplots(1, 1, figsize=(15, 10))
-fig3, ax3 = plt.subplots(1, 1, figsize=(30, 25))
-fig2.patch.set_alpha(0)
-fig3.patch.set_alpha(0)
+plt.savefig(gdrive+results_folder+"tot_frags1x2_dens_conus.png", dpi=150)
+# # %%
+# ### Figure 2
+# fig2, ax2 = plt.subplots(1, 1, figsize=(15, 10))
+# fig3, ax3 = plt.subplots(1, 1, figsize=(30, 25))
+# fig2.patch.set_alpha(0)
+# fig3.patch.set_alpha(0)
 
-for count, basin in enumerate(basin_ls):
-    tot_df = make_tot_df(basin, years, gdrive, results_folder)
-    basin = basin.replace("_", " ")
-    select = huc2[huc2['basin']==basin]
-    area = sum(select.AreaSqKm)
-    ax2.plot(tot_df[0].index, tot_df[0]["total_frags"]/area, label = basin_abr[count], color=c[count], marker='o', lw=4, ms=15)
-    ax3.plot(tot_df[2].index[1:], tot_df[2]["percent_small"][1:], label = basin_abr[count], color=c[count], marker='o', lw=8, ms=25)
-    ax3.set_ylim(0, 1)
+# for count, basin in enumerate(basin_ls):
+#     tot_df = make_tot_df(basin, years, gdrive, results_folder)
+#     basin = basin.replace("_", " ")
+#     select = huc2[huc2['basin']==basin]
+#     area = sum(select.AreaSqKm)
+#     ax2.plot(tot_df[0].index, tot_df[0]["total_frags"]/area, label = basin_abr[count], color=c[count], marker='o', lw=4, ms=15)
+#     ax3.plot(tot_df[2].index[1:], tot_df[2]["percent_small"][1:], label = basin_abr[count], color=c[count], marker='o', lw=8, ms=25)
+#     ax3.set_ylim(0, 1)
 
-    ax2.set_ylabel("Total fragment density per km$^2$", weight="bold", size=34)
-    ax3.set_ylabel("Relative change in fragments from small dams", weight="bold", size=60)
-    ax2.set_xticklabels(xlabels)
-    ax3.set_xticklabels(xlabels[1:])
-    ax2.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
-    ax2.yaxis.get_offset_text().set_fontsize(32)
+#     ax2.set_ylabel("Total fragment density per km$^2$", weight="bold", size=34)
+#     ax3.set_ylabel("Relative change in fragments from small dams", weight="bold", size=60)
+#     ax2.set_xticklabels(xlabels)
+#     ax3.set_xticklabels(xlabels[1:])
+#     ax2.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
+#     ax2.yaxis.get_offset_text().set_fontsize(32)
     
 
-ax2.legend(bbox_to_anchor=(1, 0.92, 0.1, 0), fontsize=32)
-ax2.tick_params(axis = 'both', which = 'major', labelsize = 32, width=2.5, length=5)
-ax3.tick_params(axis = 'both', which = 'major', labelsize = 58, width=2.5, length=5)
+# ax2.legend(bbox_to_anchor=(1, 0.92, 0.1, 0), fontsize=32)
+# ax2.tick_params(axis = 'both', which = 'major', labelsize = 32, width=2.5, length=5)
+# ax3.tick_params(axis = 'both', which = 'major', labelsize = 58, width=2.5, length=5)
 
-fig2.tight_layout()  
-fig2.savefig(gdrive+results_folder+"tot_frags_dens", dpi=150)
-fig3.savefig(gdrive+results_folder+"tot_frags_small.png", dpi=150)
+# fig2.tight_layout()  
+# fig2.savefig(gdrive+results_folder+"tot_frags_dens", dpi=150)
+# fig3.savefig(gdrive+results_folder+"tot_frags_small.png", dpi=150)
+# # %%
+
+
+# %%
+
 # %%
