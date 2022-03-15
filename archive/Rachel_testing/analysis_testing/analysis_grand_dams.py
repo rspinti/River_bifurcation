@@ -94,7 +94,6 @@ for i in grand_merge.index:
     else:
         grand_merge.loc[i, 'percent_dor'] = grand_merge.loc[i, 'DOR_grand']/grand_merge.loc[i, 'DOR_unfil']
     
-
 for i in grand_merge.index:
     grand_merge.loc[i, 'per_dor_small'] = 1-grand_merge.loc[i, 'percent_dor']
     if grand_merge.loc[i, 'line_width'] < 0.5:

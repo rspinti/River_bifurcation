@@ -10,8 +10,8 @@ data_folder = 'final_analysis/processed_data/'
 results_folder = 'final_analysis/analyzed_data/len_analysis/'
 huc2 = gp.read_file(gdrive+"hucs/huc2_clipped.shp")
 
-basin_ls_dict = ['Great_Basin', 'Colorado', 'Rio_Grande', 'California', 'Gulf_Coast', 'Red', 'Mississippi', 'Columbia', 'South_Atlantic', 'Great_Lakes', 'North_Atlantic', "all_basins"]
-basin_ls = ["all_basins"]
+basin_ls = ['Great_Basin', 'Colorado', 'Rio_Grande', 'California', 'Gulf_Coast', 'Red', 'Mississippi', 'Columbia', 'South_Atlantic', 'Great_Lakes', 'North_Atlantic']
+# basin_ls = ["all_basins"]
 # basin_ls = ['South_Atlantic', 'North_Atlantic', "all_basins"]
 # basin_ls = ['Great_Basin', 'Rio_Grande', 'South_Atlantic', 'North_Atlantic', 'all_basins']
 #%%
@@ -122,8 +122,9 @@ smaller_limit = [2000, 700, 300, 100]
 xlabels =["PD", "1920", "1950", "1980", "2012"]
 basin_abr = ["GB", "CO", "RG", "CA", "GC", "RE", "MI", "CB", "SA", "GL", "NA", "CONUS"]
 c = ['#9e0142', '#d53e4f', '#f46d43', '#fdae61', '#fff66f', '#d1ef77', '#79ce6b', '#5bbb9d', '#3288bd', '#3952aa', '#4f438e', 'black']
-basin_ls2 = [i.replace("_", " ") for i in basin_ls_dict[:-1]]
-basin_ls2.append("all_basins")
+# basin_ls2 = [i.replace("_", " ") for i in basin_ls_dict[:-1]]
+basin_ls2 = [i.replace("_", " ") for i in basin_ls]
+# basin_ls2.append("all_basins")
 # basin_ls2 = ["all_basins"]
 basins_dict = {z[0]: list(z[1:]) for z in zip(basin_ls2, basin_abr, c)}
 
@@ -175,7 +176,7 @@ for count, basin in enumerate(basin_ls):
         axes[row, 1].tick_params(axis = 'both', which = 'major', labelsize = 28, width=2.5, length=5)
 
 plt.tight_layout(rect=[0, 0, 0.94, 1])  
-plt.savefig(gdrive+results_folder+"frag_len_dens_conus.png", dpi=150)
+# plt.savefig(gdrive+results_folder+"frag_len_dens_conus.png", dpi=150)
 
 ### Figure 2
 fig2, axes2 = plt.subplots(1, 2, figsize=(25, 10))
@@ -216,7 +217,7 @@ axes2[1].tick_params(axis = 'both', which = 'major', labelsize = 32, width=2.5, 
 
 plt.tight_layout(rect=[0, 0, 0.94, 0.95]) 
 # plt.savefig(gdrive+results_folder+"tot_frags1x2_dens2.png", dpi=150)
-plt.savefig(gdrive+results_folder+"tot_frags1x2_dens_conus.png", dpi=150)
+# plt.savefig(gdrive+results_folder+"tot_frags1x2_dens_conus.png", dpi=150)
 # # %%
 # ### Figure 2
 # fig2, ax2 = plt.subplots(1, 1, figsize=(15, 10))
